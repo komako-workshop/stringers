@@ -1,0 +1,14 @@
+{
+  "name": "stringers",
+  "description": "「什么值得做」(stringers.io)的 Claude Code 插件:skill + 远程 MCP",
+  "owner": {
+    "name": "komako-workshop"
+  },
+  "plugins": [
+    {
+      "name": "stringer",
+      "source": "./",
+      "description": "「什么值得做」(stringers.io):每天更新的小产品方向判断与 15 个数据库,接进你的 agent"
+    }
+  ]
+}

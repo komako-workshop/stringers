@@ -1,0 +1,20 @@
+{
+  "name": "stringer",
+  "displayName": "什么值得做",
+  "version": "0.2.0",
+  "description": "「什么值得做」(stringers.io):每天更新的判断,现在哪些小产品方向正在爆、钱流向谁、窗口开到什么时候,背后是 15 个每天采集的库。",
+  "author": { "name": "stringers.io" },
+  "homepage": "https://stringers.io",
+  "repository": "https://github.com/komako-workshop/stringers",
+  "license": "MIT",
+  "keywords": ["indie", "product research", "mcp", "独立开发"],
+  "userConfig": {
+    "stringers_token": {
+      "type": "string",
+      "title": "stringers.io 的 token",
+      "description": "在 https://stringers.io 右上角登录 → 配置 agent,地址里 /mcp/ 后面那段(wt_ 开头)",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

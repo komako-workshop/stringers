@@ -6,7 +6,9 @@
 
 网页上是写好的判断。接进你自己的 agent(Claude Code、Cursor、Codex、Trae……)之后,它能读这些判断,也能直接去查背后的库,再结合**你自己的情况**回答。
 
-这个仓库是接入用的那一层:说明、命令行、skill。采集和服务端不在这里。
+这个仓库是接入用的那一层:说明、Claude Code 插件、skill、命令行。采集和服务端不在这里。
+
+> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) publishes daily, evidence-backed verdicts on which small-product directions are worth building for indie developers and small teams, drawn from 15 data libraries collected every day (payment-verified indie revenue, App Store / Google Play charts, Meta / Google / TikTok ad libraries, GitHub, Product Hunt, Hacker News, X). This repo connects it to your agent: a remote MCP server (`https://stringers.io/mcp/{token}`, tools `today` / `directions` / `direction` / `data`), a Claude Code plugin, an Agent Skill and a CLI. Content is in Chinese; get a token by logging in at stringers.io.
 
 ## 30 秒接上
 
@@ -21,6 +23,17 @@ https://stringers.io/mcp/wt_xxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 这个地址就是你的 token,别发到公开的地方。泄露了在「配置 agent」里点「换一个新地址」,旧的立刻失效。
+
+## Claude Code 插件
+
+已经有 token(登录后「配置 agent」里那个地址,`/mcp/` 后面 `wt_` 开头的一段),在 Claude Code 里:
+
+```
+/plugin marketplace add komako-workshop/stringers
+/plugin install stringer@stringers
+```
+
+安装时会问 token。MCP 和 skill 一起装好。
 
 ## 手动配置
 
@@ -119,9 +132,9 @@ stringer mcp                    # 以 stdio MCP 跑
 
 ## skill(可选)
 
-[`skill/stringer/SKILL.md`](skill/stringer/SKILL.md) 教 agent 怎么用这些判断:四种常见问法怎么答、评级怎么转述、什么时候去查库。接了 MCP 就够用;想让回答更稳,再装它:
+[`skills/stringer/SKILL.md`](skills/stringer/SKILL.md) 教 agent 怎么用这些判断:四种常见问法怎么答、评级怎么转述、什么时候去查库。接了 MCP 就够用;想让回答更稳,再装它:
 
-- Claude Code:把 `skill/stringer/` 拷到 `~/.claude/skills/stringer/`
+- Claude Code:装上面的插件就带了;或者把 `skills/stringer/` 拷到 `~/.claude/skills/stringer/`
 - Cursor:内容放进 `.cursor/rules/stringer.mdc`
 
 没接 MCP 也能用:skill 会让 agent 直接读站点的公开 json(`/api/today.json`、`/api/all.json`),只是查不了库。

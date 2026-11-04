@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "stringer": {
+      "type": "http",
+      "url": "https://stringers.io/mcp/${user_config.stringers_token}"
+    }
+  }
+}
