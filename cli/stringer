@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+"""stringer:「什么值得做」(stringers.io)的命令行。只用标准库,一个文件。
+
+  stringer today                     今天的简报(头条 + 三条)
+  stringer list [--grade SA] [--json]  全部方向与评级
+  stringer show 043 [--json]       一个方向:判断、钱、谁在做、什么情况下会错
+  stringer status                  16 个库今天跑完没有、数据到哪天
+  stringer libs                    能查的库
+  stringer schema <库>             某个库的说明(表、口径、边界);第一次查一个库先看它
+  stringer <库> <参数…>            直接查库,参数 = 该库命令的参数,如 stringer indie top --min 1000
+  stringer mcp                    以 stdio MCP server 跑(只认本地命令的客户端用;能连远程 MCP 的直接连 stringers.io/mcp/<token>)
+
+查库和 schema 要 token:环境变量 STRINGER_KEY 或 ~/.config/stringer/key(wt_ 开头的 token,或整条 https://stringers.io/mcp/<token> 地址都行)。判断层(today / list / show / status)公开。
+token 在 https://stringers.io 右上角登录后「配置 agent」里拿。"""
+import json, os, sys, urllib.request, urllib.parse, urllib.error
+
+SITE = os.environ.get('STRINGER_SITE', 'https://stringers.io').rstrip('/')
+LIBS = {
+    'indie': '独立产品的支付平台校验收入(TrustMRR,约 1.2 万个产品,逐日 / 逐月)',
+    'forsale': '在售的小生意(Flippa / Acquire 等):要价、收入、利润,卖家自填',
+    'appstore': 'App Store 115 个区的榜单、评分、评论、新上架(苹果不给下载和收入)',
+    'googleplay': 'Google Play 30 个区:榜单、精确安装量、评分',
+    'macappstore': 'Mac App Store 20 个区的免费 / 付费榜',
+    'chromestore': 'Chrome 商店扩展:用户数、评分、版本、收费迹象',
+    'shopifyapps': 'Shopify 应用商店:评论、评分、定价',
+    'github': 'GitHub ≥50 星的库约 85 万个,每天拍星数,加 trending 快照',
+    'producthunt': 'Product Hunt 的发布、票数、makers(2013 年起)',
+    'hackernews': 'Hacker News 故事与分数,Show HN(2024 年起)',
+    'metaads': 'Meta 广告库:谁在投、投多少条、落地页',
+    'googleads': 'Google 广告透明中心:名单上的开发者在不在投',
+    'tiktokads': 'TikTok 广告库(欧洲)',
+    'crossing': '过线名单:每天在 7 个库上算「今天刚冒头的」',
+    'x': 'X 上五个圈子(AI 创始人 / 独立开发者 / 研究员 / 美股投资人 / VC)成员的原创帖',
+}
+
+
+def key():
+    k = os.environ.get('STRINGER_KEY', '').strip() or os.environ.get('WORTH_KEY', '').strip()
+    for f in ('~/.config/stringer/key', '~/.config/worth/key'):
+        if k: break
+        try: k = open(os.path.expanduser(f)).read().strip()
+        except OSError: k = ''
+    return k
+
+
+def get(url, timeout=150):
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'stringer-cli/0.2'}), timeout=timeout) as r:
+            return r.read().decode('utf-8', 'replace')
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8', 'replace')[:300]
+        sys.exit(f'HTTP {e.code}:{body}')
+    except urllib.error.URLError as e:
+        sys.exit(f'连不上 {SITE}:{e.reason}')
+
+
+def jget(path):
+    return json.loads(get(f'{SITE}{path}', timeout=30))
+
+
+def money(x):
+    m = x.get('money') or {}
+    return f"{m.get('total', '')} {m.get('kind', '')}".strip()
+
+
+def line(x, why=False):
+    s = f"{x['id']}  [{x['grade']} {x.get('grade_note', '')}]  {x.get('title', '')}"
+    if money(x): s += f"   ·  {money(x)}"
+    if why and x.get('grade_why'): s += f"\n      {x['grade_why']}"
+    return s
+
+
+def cmd_today(a):
+    t = jget('/api/today.json')
+    if '--json' in a: return print(json.dumps(t, ensure_ascii=False, indent=1))
+    L = t.get('lead', {})
+    print(f"什么值得做 · {t.get('date')} 今日简报(数据到 {t.get('data_to')})\n")
+    print('头条\n' + line(L, True))
+    if L.get('verdict'): print(f"      判断:{L['verdict']}")
+    m = L.get('money') or {}
+    if m.get('note'): print(f"      钱:{m.get('note')}")
+    print(f"      {L.get('url', '')}\n")
+    print('再看三条')
+    for x in t.get('seconds', []): print(line(x) + f"\n      {x.get('url', '')}")
+    print(f"\n全部:stringer list   详情:stringer show <编号>")
+
+
+def cmd_list(a):
+    d = jget('/api/all.json'); items = d['items']
+    if '--grade' in a:
+        gs = set(a[a.index('--grade') + 1].upper().replace(',', ''))
+        items = [x for x in items if x['grade'] in gs]
+    if '--json' in a: return print(json.dumps(items, ensure_ascii=False, indent=1))
+    print(f"什么值得做 · {d['n']} 个方向 · 数据到 {d.get('data_to')} · 评级 = 成功率(主看窗口期和有多赚钱)\n")
+    order = 'SABCDE'
+    for g in order:
+        grp = [x for x in items if x['grade'] == g]
+        if not grp: continue
+        print(f"{g} {d['grades'].get(g, '')}  {len(grp)} 条")
+        for x in grp: print('  ' + line(x, why=g in 'SA'))
+        print()
+
+
+def cmd_show(a):
+    ids = [x for x in a if x.isdigit()]
+    if not ids: sys.exit('用法:stringer show <编号>,如 stringer show 043')
+    i = ids[0].zfill(3)
+    d = jget('/api/all.json'); x = next((y for y in d['items'] if y['id'] == i), None)
+    if not x: sys.exit(f'没有 {i}')
+    full = {}
+    if x.get('json'):
+        try: full = json.loads(get(x['json'], timeout=30))
+        except SystemExit: full = {}
+    if '--json' in a: return print(json.dumps(full or x, ensure_ascii=False, indent=1))
+    print(f"[{x['grade']} {x.get('grade_note', '')}] {x.get('headline') or x.get('title')}")
+    if x.get('headline'): print(f"    {x['title']}")
+    print(f"\n判断:{x.get('verdict', '')}\n    {x.get('sub', '')}")
+    if x.get('grade_why'): print(f"为什么这个级:{x['grade_why']}")
+    m = x.get('money') or {}
+    if m: print(f"钱:{m.get('total', '')} {m.get('kind', '')}({m.get('n')} 家)\n    {m.get('note', '')}")
+    rows = full.get('rows') or {}
+    if rows:
+        print()
+        for k, v in rows.items():
+            if v: print(f"{k}:{v}")
+    who = full.get('who') or x.get('who') or []
+    if who:
+        print('\n谁在做')
+        for w in who:
+            if isinstance(w, dict): print(f"  - {w.get('name', '')}  {w.get('url', '')}" + (f"\n      {w['what']}" if w.get('what') else ''))
+    wrong = full.get('wrong') or x.get('wrong') or []
+    if wrong:
+        print('\n什么情况下这个判断会错')
+        for w in wrong: print(f"  - {w}")
+    notes = x.get('notes') or []
+    if notes:
+        print('\n最新')
+        for n in notes: print(f"  {n['date']}  {n['note']}")
+    print(f"\n复查 {x.get('recheck', '')} · 全文 {x.get('url', '')}")
+
+
+def cmd_status(a):
+    s = jget('/status.json')
+    if '--json' in a: return print(json.dumps(s, ensure_ascii=False, indent=1))
+    print(f"数据层 {s['generated'].replace('T', ' ')} · 数据到 {s['data_to']} · {'全部正常' if s['ok'] else '有问题'} · /data {s['disk']['data_gb']} GB\n")
+    for r in s['libs']:
+        db = f"{r['db']['size_mb']} MB" if r.get('db') else '—'
+        print(f"  {r['name']:<12}{r['state']:<6}定时 {r['at']:<14}最近结束 {(r['last_end'] or '—')[5:16]:<13}{db:<10}{';'.join(r.get('note', []))}")
+
+
+def cmd_libs(a):
+    print('能查的库(stringer <库> --help 看子命令,stringer schema <库> 看口径和边界):\n')
+    for k, v in LIBS.items(): print(f"  {k:<12}{v}")
+    print('\n找钱:indie、forsale;需求与榜单:appstore、googleplay、macappstore、chromestore、shopifyapps;开发者侧热度:github、producthunt、hackernews;'
+          '谁在买量:metaads、googleads、tiktokads;今天刚冒头:crossing;圈子议论:x。')
+
+
+def data(lib, args):
+    k = key()
+    if not k: sys.exit('查库要 token:export STRINGER_KEY=wt_…(或写到 ~/.config/stringer/key)。到 https://stringers.io 右上角登录,「配置 agent」里能看到')
+    q = urllib.parse.urlencode({'lib': lib, 'args': args})
+    k = k.rsplit('/mcp/', 1)[-1].strip('/')             # 也接受整条 MCP 地址
+    path = f'mcp/{k}' if k.startswith('wt_') else k     # wt_ 开头是公开门的 token;旧钥匙是路径段
+    return get(f'{SITE}/{path}/data?{q}')
+
+
+def cmd_schema(a):
+    libs = [x for x in a if x in LIBS]
+    if not libs: sys.exit('用法:stringer schema <库>;库:' + ', '.join(LIBS))
+    print(data(libs[0], 'schema'))
+
+
+def shell_join(parts):
+    out = []
+    for p in parts:
+        if any(c in p for c in ' "\'') or p == '': out.append('"' + p.replace('"', '\\"') + '"')
+        else: out.append(p)
+    return ' '.join(out)
+
+
+def cmd_lib(lib, rest):
+    print(data(lib, shell_join(rest)))
+
+
+# ---------------------------------------------------------------- stdio MCP(最小实现:initialize / tools/list / tools/call)
+def mcp():
+    tools = [
+        {'name': 'today', 'description': '今天的简报:头条 + 三条(评级、判断、钱、链接)。', 'inputSchema': {'type': 'object', 'properties': {}}},
+        {'name': 'directions', 'description': '全部方向与评级(S 正在爆发 / A 值得一试 / B 可能有机会 / C 值得参考 / D 希望较小 / E 不太靠谱)。grade 可选,如 "SA"。',
+         'inputSchema': {'type': 'object', 'properties': {'grade': {'type': 'string'}}}},
+        {'name': 'direction', 'description': '一个方向的全部判断:判断、为什么这个级、钱、各栏(背景 / 机会 / 需求 / 竞争 / 收入 / 增长 / 窗口期 / 适合谁)、谁在做、什么情况下会错。id 是三位编号。',
+         'inputSchema': {'type': 'object', 'properties': {'id': {'type': 'string'}}, 'required': ['id']}},
+        {'name': 'data', 'description': '直接查一个数据层(只读)。lib:' + ', '.join(LIBS) + '。args 是该库命令的参数,如 "coverage"、"top --min 1000"、\'search "stock checker" --cc us --top 8\';'
+         '第一次用某个库先 args="schema" 看说明,再 "coverage" 看边界;某子命令参数不清楚就 "<子命令> --help"。多词关键词加引号。',
+         'inputSchema': {'type': 'object', 'properties': {'lib': {'type': 'string'}, 'args': {'type': 'string'}}, 'required': ['lib']}},
+        {'name': 'status', 'description': '16 个库今天跑完没有、数据到哪天。', 'inputSchema': {'type': 'object', 'properties': {}}},
+    ]
+    import io, contextlib
+
+    def capture(fn, *a):
+        buf = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buf): fn(*a)
+        except SystemExit as e: buf.write(str(e))
+        return buf.getvalue()
+
+    def call(name, args):
+        if name == 'today': return capture(cmd_today, [])
+        if name == 'directions': return capture(cmd_list, ['--grade', args['grade']] if args.get('grade') else [])
+        if name == 'direction': return capture(cmd_show, [str(args.get('id', ''))])
+        if name == 'status': return capture(cmd_status, [])
+        if name == 'data':
+            lib = (args.get('lib') or '').strip()
+            if lib not in LIBS: return f'没有这个库:{lib}。能查的:{", ".join(LIBS)}'
+            try: return data(lib, args.get('args') or 'schema')
+            except SystemExit as e: return str(e)
+        return f'没有这个工具:{name}'
+
+    def send(obj):
+        sys.stdout.write(json.dumps(obj, ensure_ascii=False) + '\n'); sys.stdout.flush()
+
+    for raw in sys.stdin:
+        raw = raw.strip()
+        if not raw: continue
+        try: req = json.loads(raw)
+        except ValueError: continue
+        mid, method, params = req.get('id'), req.get('method'), req.get('params') or {}
+        if method == 'initialize':
+            send({'jsonrpc': '2.0', 'id': mid, 'result': {'protocolVersion': params.get('protocolVersion', '2025-06-18'), 'capabilities': {'tools': {}},
+                                                           'serverInfo': {'name': 'stringer', 'version': '0.2'}, 'instructions': '判断先看 today / directions / direction;要原始数据用 data,第一次查某个库先看 schema。每个数字带日期和来自哪个库。'}})
+        elif method == 'tools/list':
+            send({'jsonrpc': '2.0', 'id': mid, 'result': {'tools': tools}})
+        elif method == 'tools/call':
+            text = call(params.get('name'), params.get('arguments') or {})
+            send({'jsonrpc': '2.0', 'id': mid, 'result': {'content': [{'type': 'text', 'text': text}]}})
+        elif method == 'ping':
+            send({'jsonrpc': '2.0', 'id': mid, 'result': {}})
+        elif mid is not None:
+            send({'jsonrpc': '2.0', 'id': mid, 'error': {'code': -32601, 'message': f'不支持:{method}'}})
+        # notifications(initialized 等)不回
+
+
+def main():
+    a = sys.argv[1:]
+    if not a or a[0] in ('-h', '--help', 'help'): return print(__doc__)
+    c, rest = a[0], a[1:]
+    if c == 'today': return cmd_today(rest)
+    if c == 'list': return cmd_list(rest)
+    if c == 'show': return cmd_show(rest)
+    if c == 'status': return cmd_status(rest)
+    if c == 'libs': return cmd_libs(rest)
+    if c == 'schema': return cmd_schema(rest)
+    if c == 'mcp': return mcp()
+    if c in LIBS: return cmd_lib(c, rest)
+    sys.exit(f'不认识 {c}。stringer --help 看用法;stringer libs 看能查的库。')
+
+
+if __name__ == '__main__':
+    main()
