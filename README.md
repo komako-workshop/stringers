@@ -8,7 +8,7 @@
 
 这个仓库是接入用的那一层:说明、Claude Code 插件、skill、命令行。采集和服务端不在这里。
 
-> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) publishes daily, evidence-backed verdicts on which small-product directions are worth building for indie developers and small teams, drawn from 15 data libraries collected every day (payment-verified indie revenue, App Store / Google Play charts, Meta / Google / TikTok ad libraries, GitHub, Product Hunt, Hacker News, X). This repo connects it to your agent: a remote MCP server (`https://stringers.io/mcp/{token}`, tools `today` / `directions` / `direction` / `data`), a Claude Code plugin, an Agent Skill and a CLI. Content is in Chinese; get a token by logging in at stringers.io.
+> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) publishes daily, evidence-backed verdicts on which small-product directions are worth building for indie developers and small teams, drawn from 15 data libraries collected every day (payment-verified indie revenue, App Store / Google Play charts, Meta / Google / TikTok ad libraries, GitHub, Product Hunt, Hacker News, X). This repo connects it to your agent: a remote MCP server (`https://stringers.io/mcp/{token}`, tools `today` / `hot` / `products` / `directions` / `direction` / `data`), a Claude Code plugin, an Agent Skill and a CLI. Content is in Chinese; get a token by logging in at stringers.io.
 
 ## 30 秒接上
 
@@ -66,6 +66,7 @@ url = "https://stringers.io/mcp/<token>"
 
 - 最近有什么适合用来练手的独立开发项目?
 - 今天的头条是什么?跟我有没有关系?
+- 最近有哪些正在爆的单品?哪个适合我跟?
 - 我想做一个给 Claude 用的 MCP 工具,这个方向现在谁在做、赚到钱了吗?
 - 最近 30 天收入涨得最快的 AI 视频类独立产品是哪几个?各自怎么获客的?
 - 按我的情况出一份今天的简报:只看适合 iOS 独立开发、不碰买量的方向。
@@ -75,6 +76,8 @@ url = "https://stringers.io/mcp/<token>"
 | 工具 | 做什么 |
 |---|---|
 | `today` | 今天的简报:头条和再看三条(评级、判断、钱、链接) |
+| `hot` | 爆款单品:编辑每天从各库挑的、正在爆而且小团队有机会的单个产品,带数字(来源和日期)、为什么在爆、对你的机会、相关方向;`past=true` 连已下榜的也给 |
+| `products` | 在涨的单个产品:移动端 App、GitHub 开源项目、Chrome 插件,每个都研究过为什么跑出来、怎么跟,并给了等级;`sec` 选板块(`apps` / `github` / `chrome`),`grade`、`q` 筛,`key` 读整篇文章 |
 | `directions` | 全部方向的一行摘要,可按评级(`grade="SA"`)或关键词(`q`)筛 |
 | `direction` | 一个方向的完整判断:结论、为什么这个级、钱在哪、谁在做、什么情况算判断错了、各维度证据 |
 | `data` | 直接查一个原始库(只读):`lib` 是库名,`args` 是参数;第一次查某个库先 `args="schema"` |
@@ -107,7 +110,7 @@ S 正在爆发 · A 值得一试 · B 可能有机会 · C 值得参考(方向�
 
 ## 限额
 
-测试阶段免费。每个 token 每天查库 200 次,其中 X 实时查询 50 次;每次结果最多 50 行。判断层(`today` / `directions` / `direction`)不算在查库次数里。
+测试阶段免费。每个 token 每天查库 200 次,其中 X 实时查询 50 次;每次结果最多 50 行。判断层(`today` / `hot` / `products` / `directions` / `direction`)不算在查库次数里。
 
 我们会记下你的 agent 查了什么,以及它转述的「你这次想弄清什么」(工具的可选参数 `ask`,一句话、不带个人信息),用来知道大家关心什么、该补哪些数据;手机号只用来认出你。这些都不会公开。
 

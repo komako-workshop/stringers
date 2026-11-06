@@ -12,7 +12,7 @@ metadata: {"openclaw": {"homepage": "https://stringers.io", "emoji": "🧭"}}
 
 ## 两条路
 
-- **接了 `stringer` MCP**(优先):`today` 今天的简报;`directions` 全部方向一行摘要(`grade="SA"` 筛等级,`q` 按关键词);`direction` 一个方向的完整判断(id 是三位编号);`data` 查原始库。
+- **接了 `stringer` MCP**(优先):`today` 今天的简报;`hot` 编辑挑的爆款单品;`products` 在涨的单个 App / GitHub 项目 / Chrome 插件(带等级和研究文章,`key` 读全文);`directions` 全部方向一行摘要(`grade="SA"` 筛等级,`q` 按关键词);`direction` 一个方向的完整判断(id 是三位编号);`data` 查原始库。
 - **没接 MCP**:直接 fetch 公开 json,不要 token。
   - `https://stringers.io/api/today.json`:`lead`(头条)和 `seconds`(三条)。
   - `https://stringers.io/api/all.json`:`items[]`,每条有 `id`、`title`、`headline`、`grade` / `grade_note`、`grade_why`、`verdict`、`money{total,kind,n,note}`(`kind`:实收 = 支付平台校验过 / 估 / 粗估 / 开源)、`rows{背景,机会,需求,竞争,收入,增长,窗口期,适合谁}`、`who[]`、`tags`、`wrong[]`(什么情况下这个判断会错)、`notes[]`(复查注记,新的在前)、`retired`(下架)、`url`。约 450 KB。
