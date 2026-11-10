@@ -77,7 +77,7 @@ url = "https://stringers.io/mcp/<token>"
 |---|---|
 | `today` | 今天的简报:头条和再看三条(评级、判断、钱、链接) |
 | `hot` | 爆款单品:编辑每天从各库挑的、正在爆而且小团队有机会的单个产品,带数字(来源和日期)、为什么在爆、对你的机会、相关方向;`past=true` 连已下榜的也给 |
-| `products` | 在涨的单个产品:移动端 App、GitHub 开源项目、Chrome 插件,每个都研究过为什么跑出来、怎么跟,并给了等级;`sec` 选板块(`apps` / `github` / `chrome`),`grade`、`q` 筛,`key` 读整篇文章 |
+| `products` | 在涨的单个产品:移动端 App、GitHub 开源项目、Chrome 插件,每个都研究过为什么跑出来、怎么跟,并给了等级;`sec` 选板块(`apps` / `github` / `chrome`),`grade`、`q` 筛,`key` 读整篇文章;`growth="关键词"` 按「怎么起量」搜案例,`key` 加 `part="growth"` 只读它怎么拿到用户(已经有产品、问怎么推广时用) |
 | `directions` | 全部方向的一行摘要,可按评级(`grade="SA"`)或关键词(`q`)筛 |
 | `direction` | 一个方向的完整判断:结论、为什么这个级、钱在哪、谁在做、什么情况算判断错了、各维度证据 |
 | `data` | 直接查一个原始库(只读):`lib` 是库名,`args` 是参数;第一次查某个库先 `args="schema"` |

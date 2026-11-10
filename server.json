@@ -3,7 +3,7 @@
   "name": "io.github.komako-workshop/stringers",
   "title": "什么值得做 Stringers",
   "description": "Daily verdicts on which small-product directions are worth building, from 15 data libraries",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "repository": { "url": "https://github.com/komako-workshop/stringers", "source": "github" },
   "websiteUrl": "https://stringers.io",
   "remotes": [
