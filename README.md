@@ -139,7 +139,7 @@ Ask your agent things like:
 
 Each link shows example questions, a real query with today's output, and what the data cannot prove. Workflows: [product research](https://stringers.io/en/tools/product-research-with-claude-code.html) · [validate an idea](https://stringers.io/en/tools/validate-a-product-idea.html) · [competitor ads](https://stringers.io/en/tools/competitor-ad-research.html) · [rising apps](https://stringers.io/en/tools/find-rising-apps.html) · [first users](https://stringers.io/en/tools/get-first-users.html).
 
-Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://stringers.io/mcp/<token>`, tools `today` / `hot` / `products` / `directions` / `direction` / `data`. Free during beta (200 queries a day). The written verdicts are in Chinese with an English site under [stringers.io/en/](https://stringers.io/en/). Sign-up currently verifies a mainland China mobile number by SMS; international sign-up is not open yet.
+Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://stringers.io/mcp/<token>`, tools `today` / `hot` / `products` / `directions` / `direction` / `data`. Free during beta (200 queries a day). The written verdicts are in Chinese with an English site under [stringers.io/en/](https://stringers.io/en/). Get your personal URL by signing in with Google at [stringers.io/en/start.html](https://stringers.io/en/start.html).
 
 ## 限额
 
