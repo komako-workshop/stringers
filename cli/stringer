@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """stringer:「什么值得做」(stringers.io)的命令行。只用标准库,一个文件。
 
-  stringer today                     今天的简报(头条 + 三条)
-  stringer list [--grade SA] [--json]  全部方向与评级
-  stringer show 043 [--json]       一个方向:判断、钱、谁在做、什么情况下会错
+  stringer feed [--day 2026-11-11] [-q 词]  市场动态:数据上突然涨起来的小产品,逐条查过为什么涨(不带参数 = 最新一天)
+  stringer feed <slug>             一条动态的完整调查:定位、对手、时间线、出处
+  stringer plays [-q 词]           打法:从这些调查里归纳的、能照着做的做法
+  stringer plays p04               一条打法全文:分步骤、案例、反例、适合谁
+  stringer hot                     编辑挑的爆款单品
+  stringer products [--sec apps] [--grade AB] [-q 词] [--growth 正则] [--key K [--part growth]]  在涨的产品(App / GitHub / Chrome 插件 / 网站)
   stringer status                  16 个库今天跑完没有、数据到哪天
   stringer libs                    能查的库
   stringer schema <库>             某个库的说明(表、口径、边界);第一次查一个库先看它
   stringer <库> <参数…>            直接查库,参数 = 该库命令的参数,如 stringer indie top --min 1000
   stringer mcp                    以 stdio MCP server 跑(只认本地命令的客户端用;能连远程 MCP 的直接连 stringers.io/mcp/<token>)
 
-查库和 schema 要 token:环境变量 STRINGER_KEY 或 ~/.config/stringer/key(wt_ 开头的 token,或整条 https://stringers.io/mcp/<token> 地址都行)。判断层(today / list / show / status)公开。
+除了 status 都要 token:环境变量 STRINGER_KEY 或 ~/.config/stringer/key(wt_ 开头的 token,或整条 https://stringers.io/mcp/<token> 地址都行)。
+没有 token 时 stringer feed 退回读首页的 Markdown 版(https://stringers.io/index.md,公开)。
+约 90 个「方向」的长文和评级 2026-11-12 起停止更新;stringer list / show <编号> 还能读那份存档。
 token 在 https://stringers.io 右上角登录后「配置 agent」里拿。"""
 import json, os, sys, urllib.request, urllib.parse, urllib.error
 
@@ -45,7 +50,7 @@ def key():
 
 def get(url, timeout=150):
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'stringer-cli/0.2'}), timeout=timeout) as r:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'stringer-cli/0.4'}), timeout=timeout) as r:
             return r.read().decode('utf-8', 'replace')
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8', 'replace')[:300]
@@ -70,28 +75,13 @@ def line(x, why=False):
     return s
 
 
-def cmd_today(a):
-    t = jget('/api/today.json')
-    if '--json' in a: return print(json.dumps(t, ensure_ascii=False, indent=1))
-    L = t.get('lead', {})
-    print(f"什么值得做 · {t.get('date')} 今日简报(数据到 {t.get('data_to')})\n")
-    print('头条\n' + line(L, True))
-    if L.get('verdict'): print(f"      判断:{L['verdict']}")
-    m = L.get('money') or {}
-    if m.get('note'): print(f"      钱:{m.get('note')}")
-    print(f"      {L.get('url', '')}\n")
-    print('再看三条')
-    for x in t.get('seconds', []): print(line(x) + f"\n      {x.get('url', '')}")
-    print(f"\n全部:stringer list   详情:stringer show <编号>")
-
-
 def cmd_list(a):
     d = jget('/api/all.json'); items = d['items']
     if '--grade' in a:
         gs = set(a[a.index('--grade') + 1].upper().replace(',', ''))
         items = [x for x in items if x['grade'] in gs]
     if '--json' in a: return print(json.dumps(items, ensure_ascii=False, indent=1))
-    print(f"什么值得做 · {d['n']} 个方向 · 数据到 {d.get('data_to')} · 评级 = 成功率(主看窗口期和有多赚钱)\n")
+    print(f"什么值得做 · {d['n']} 个方向(存档,2026-11-12 起停止更新)· 评级 = 成功率(主看窗口期和有多赚钱)\n")
     order = 'SABCDE'
     for g in order:
         grp = [x for x in items if x['grade'] == g]
@@ -136,7 +126,7 @@ def cmd_show(a):
     if notes:
         print('\n最新')
         for n in notes: print(f"  {n['date']}  {n['note']}")
-    print(f"\n复查 {x.get('recheck', '')} · 全文 {x.get('url', '')}")
+    print(f"\n存档:这批方向 2026-11-12 起停止更新 · 全文 {x.get('url', '')}")
 
 
 def cmd_status(a):
@@ -164,6 +154,63 @@ def data(lib, args):
     return get(f'{SITE}/{path}/data?{q}')
 
 
+def tool(name, args):
+    """调远程 MCP 门的一个工具(feed / plays / hot / products),返回文本。"""
+    k = key()
+    if not k: sys.exit('要 token:export STRINGER_KEY=wt_…(或写到 ~/.config/stringer/key)。到 https://stringers.io 右上角登录,「配置 agent」里能看到')
+    k = k.rsplit('/mcp/', 1)[-1].strip('/')
+    url = f'{SITE}/mcp/{k}'
+
+    def rpc(method, params, sid=None, i=1):
+        h = {'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'User-Agent': 'stringer-cli/0.4'}
+        if sid: h['Mcp-Session-Id'] = sid
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, json.dumps({'jsonrpc': '2.0', 'id': i, 'method': method, 'params': params}).encode(), h), timeout=150) as r:
+                t = r.read().decode('utf-8', 'replace'); sid = r.headers.get('Mcp-Session-Id') or sid
+        except urllib.error.HTTPError as e: sys.exit(f'HTTP {e.code}:{e.read().decode("utf-8", "replace")[:300]}')
+        except urllib.error.URLError as e: sys.exit(f'连不上 {SITE}:{e.reason}')
+        d = [l[5:].strip() for l in t.splitlines() if l.startswith('data:')]
+        return sid, json.loads(d[-1] if d else t)
+
+    sid, _ = rpc('initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'stringer-cli', 'version': '0.4'}})
+    _, r = rpc('tools/call', {'name': name, 'arguments': args}, sid, 2)
+    if r.get('error'): sys.exit(str(r['error'].get('message', r['error'])))
+    return '\n'.join(c.get('text', '') for c in r.get('result', {}).get('content', []))
+
+
+def opts(a, flags):
+    """把 --day X / -q X 这类参数拆出来,剩下的是位置参数。flags:{命令行写法: 工具参数名}。"""
+    out, rest, i = {}, [], 0
+    while i < len(a):
+        if a[i] in flags and i + 1 < len(a): out[flags[a[i]]] = a[i + 1]; i += 2
+        elif a[i] == '--past': out['past'] = True; i += 1
+        else: rest.append(a[i]); i += 1
+    return out, rest
+
+
+def cmd_feed(a):
+    o, rest = opts(a, {'--day': 'day', '-q': 'q', '--q': 'q'})
+    if rest: o['slug'] = rest[0]
+    if not key() and not o: return print(get(f'{SITE}/index.md', timeout=30))
+    print(tool('feed', o))
+
+
+def cmd_plays(a):
+    o, rest = opts(a, {'-q': 'q', '--q': 'q'})
+    if rest: o['id'] = rest[0]
+    print(tool('plays', o))
+
+
+def cmd_hot(a):
+    print(tool('hot', opts(a, {})[0]))
+
+
+def cmd_products(a):
+    o, rest = opts(a, {'--sec': 'sec', '--grade': 'grade', '-q': 'q', '--q': 'q', '--key': 'key', '--growth': 'growth', '--part': 'part'})
+    if rest and 'key' not in o: o['key'] = rest[0]
+    print(tool('products', o))
+
+
 def cmd_schema(a):
     libs = [x for x in a if x in LIBS]
     if not libs: sys.exit('用法:stringer schema <库>;库:' + ', '.join(LIBS))
@@ -185,11 +232,13 @@ def cmd_lib(lib, rest):
 # ---------------------------------------------------------------- stdio MCP(最小实现:initialize / tools/list / tools/call)
 def mcp():
     tools = [
-        {'name': 'today', 'description': '今天的简报:头条 + 三条(评级、判断、钱、链接)。', 'inputSchema': {'type': 'object', 'properties': {}}},
-        {'name': 'directions', 'description': '全部方向与评级(S 正在爆发 / A 值得一试 / B 可能有机会 / C 值得参考 / D 希望较小 / E 不太靠谱)。grade 可选,如 "SA"。',
-         'inputSchema': {'type': 'object', 'properties': {'grade': {'type': 'string'}}}},
-        {'name': 'direction', 'description': '一个方向的全部判断:判断、为什么这个级、钱、各栏(背景 / 机会 / 需求 / 竞争 / 收入 / 增长 / 窗口期 / 适合谁)、谁在做、什么情况下会错。id 是三位编号。',
-         'inputSchema': {'type': 'object', 'properties': {'id': {'type': 'string'}}, 'required': ['id']}},
+        {'name': 'feed', 'description': '市场动态:数据上突然涨起来的小产品(App、开源项目、插件、网站、独立产品收入),每条都逐个调查过为什么是这几天涨,每天更新。不带参数给最新一天;day="2026-11-10" 看某一天;q 按短词在全部日期里搜;slug 读一条的完整调查(定位、对手、时间线、出处)。问「最近什么在涨」「某个产品为什么火了」先用它。',
+         'inputSchema': {'type': 'object', 'properties': {'day': {'type': 'string'}, 'q': {'type': 'string'}, 'slug': {'type': 'string'}}}},
+        {'name': 'plays', 'description': '打法:从市场动态的调查里归纳的、小团队能照着做的做法,每条有分步骤、真实案例、照做却没成的反例、适合谁。不带参数给清单;id="p03" 读全文;q 按短词搜。',
+         'inputSchema': {'type': 'object', 'properties': {'id': {'type': 'string'}, 'q': {'type': 'string'}}}},
+        {'name': 'hot', 'description': '爆款单品:编辑每天挑的、正在爆而且小团队有机会的单个产品。past=true 连已下榜的也给。', 'inputSchema': {'type': 'object', 'properties': {'past': {'type': 'boolean'}}}},
+        {'name': 'products', 'description': '在涨的单个产品(移动端 App / GitHub 项目 / Chrome 插件 / 网站),每个都研究过为什么跑出来并给了等级(S 最值得跟,E 别碰)。sec 选 apps / github / chrome / web;grade、q 筛;key 读整篇;growth 是正则,按「怎么起量」搜案例;key 加 part="growth" 只读它怎么拿到用户。',
+         'inputSchema': {'type': 'object', 'properties': {'sec': {'type': 'string'}, 'grade': {'type': 'string'}, 'q': {'type': 'string'}, 'key': {'type': 'string'}, 'growth': {'type': 'string'}, 'part': {'type': 'string'}}}},
         {'name': 'data', 'description': '直接查一个数据层(只读)。lib:' + ', '.join(LIBS) + '。args 是该库命令的参数,如 "coverage"、"top --min 1000"、\'search "stock checker" --cc us --top 8\';'
          '第一次用某个库先 args="schema" 看说明,再 "coverage" 看边界;某子命令参数不清楚就 "<子命令> --help"。多词关键词加引号。',
          'inputSchema': {'type': 'object', 'properties': {'lib': {'type': 'string'}, 'args': {'type': 'string'}}, 'required': ['lib']}},
@@ -205,9 +254,9 @@ def mcp():
         return buf.getvalue()
 
     def call(name, args):
-        if name == 'today': return capture(cmd_today, [])
-        if name == 'directions': return capture(cmd_list, ['--grade', args['grade']] if args.get('grade') else [])
-        if name == 'direction': return capture(cmd_show, [str(args.get('id', ''))])
+        if name in ('feed', 'plays', 'hot', 'products'):
+            try: return tool(name, {k: v for k, v in args.items() if v not in ('', None)})
+            except SystemExit as e: return str(e)
         if name == 'status': return capture(cmd_status, [])
         if name == 'data':
             lib = (args.get('lib') or '').strip()
@@ -227,7 +276,7 @@ def mcp():
         mid, method, params = req.get('id'), req.get('method'), req.get('params') or {}
         if method == 'initialize':
             send({'jsonrpc': '2.0', 'id': mid, 'result': {'protocolVersion': params.get('protocolVersion', '2025-06-18'), 'capabilities': {'tools': {}},
-                                                           'serverInfo': {'name': 'stringer', 'version': '0.2'}, 'instructions': '判断先看 today / directions / direction;要原始数据用 data,第一次查某个库先看 schema。每个数字带日期和来自哪个库。'}})
+                                                           'serverInfo': {'name': 'stringer', 'version': '0.4'}, 'instructions': '最近什么在涨、为什么涨看 feed;能照着做的做法看 plays;单个产品的研究看 products / hot;要原始数据用 data,第一次查某个库先看 schema。每个数字带日期和来自哪个库。'}})
         elif method == 'tools/list':
             send({'jsonrpc': '2.0', 'id': mid, 'result': {'tools': tools}})
         elif method == 'tools/call':
@@ -244,7 +293,10 @@ def main():
     a = sys.argv[1:]
     if not a or a[0] in ('-h', '--help', 'help'): return print(__doc__)
     c, rest = a[0], a[1:]
-    if c == 'today': return cmd_today(rest)
+    if c in ('feed', 'today'): return cmd_feed(rest)       # today 是旧名字(方向简报 2026-11-12 停更),现在等于最新一天的市场动态
+    if c == 'plays': return cmd_plays(rest)
+    if c == 'hot': return cmd_hot(rest)
+    if c == 'products': return cmd_products(rest)
     if c == 'list': return cmd_list(rest)
     if c == 'show': return cmd_show(rest)
     if c == 'status': return cmd_status(rest)
@@ -256,4 +308,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try: main()
+    except BrokenPipeError: os._exit(0)      # 输出接到 head 之类提前关掉的管道

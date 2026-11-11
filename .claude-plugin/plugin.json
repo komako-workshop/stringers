@@ -1,8 +1,8 @@
 {
   "name": "stringer",
   "displayName": "什么值得做",
-  "version": "0.3.0",
-  "description": "「什么值得做」(stringers.io):每天更新的判断,现在哪些小产品方向正在爆、钱流向谁、窗口开到什么时候,背后是 15 个每天采集的库。",
+  "version": "0.4.0",
+  "description": "「什么值得做」(stringers.io):每天追踪哪些小产品突然涨起来了,逐条调查为什么涨,归纳成能照着做的打法,背后是 15 个每天采集的库。",
   "author": { "name": "stringers.io" },
   "homepage": "https://stringers.io",
   "repository": "https://github.com/komako-workshop/stringers",

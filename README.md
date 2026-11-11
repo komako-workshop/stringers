@@ -1,18 +1,22 @@
 # stringer:把「什么值得做」接进你的 agent
 
-[什么值得做](https://stringers.io) 每天回答一个问题:**一两个人、几个月,现在做什么小产品最可能赚到钱。**
+[什么值得做](https://stringers.io) 每天回答一个问题:**哪些小产品这几天突然涨起来了,为什么涨,你能照着学什么。**
 
-我们每天采集 15 个库:独立产品经支付平台校验的真实收入、App Store 115 个区和 Google Play 的榜单、Meta / Google / TikTok 广告库、GitHub、Product Hunt、Hacker News、X 上几个圈子……在这上面写了约 90 个方向的判断,每个方向一篇长文、一个评级,每天复查。
+我们每天采集 15 个库:独立产品经支付平台校验的真实收入、App Store 115 个区和 Google Play 的榜单、Meta / Google / TikTok 广告库、GitHub、Product Hunt、Hacker News、X 上几个圈子……在这上面每天做三件事:
 
-网页上是写好的判断。接进你自己的 agent(Claude Code、Cursor、Codex、Trae……)之后,它能读这些判断,也能直接去查背后的库,再结合**你自己的情况**回答。
+- **市场动态**:从几千个候选里挑出数据上突然起来的小产品(App、开源项目、插件、网站、独立产品收入),逐条调查为什么是这几天涨、这波能不能持续,查完站不住的撤下。
+- **打法**:从这些调查里归纳出小团队能照着做的做法,每条有分步骤、真实案例和照做却没成的反例。
+- **在涨的产品**:三千多个逐个研究过的 App、GitHub 项目、Chrome 插件、网站,每个写了它靠什么拿到用户,给了跟进等级。
+
+网页上是写好的调查。接进你自己的 agent(Claude Code、Cursor、Codex、Trae……)之后,它能读这些调查,也能直接去查背后的库,再结合**你自己的情况**回答。
 
 这个仓库是接入用的那一层:说明、Claude Code 插件、skill、命令行。采集和服务端不在这里。
 
-> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) publishes daily, evidence-backed verdicts on which small-product directions are worth building for indie developers and small teams, drawn from 15 data libraries collected every day (payment-verified indie revenue, App Store / Google Play charts, Meta / Google / TikTok ad libraries, GitHub, Product Hunt, Hacker News, X). This repo connects it to your agent: a remote MCP server (`https://stringers.io/mcp/{token}`, tools `today` / `hot` / `products` / `directions` / `direction` / `data`), a Claude Code plugin, an Agent Skill and a CLI. Content is in Chinese; get a token by logging in at stringers.io.
+> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) tracks which small products suddenly took off each day and investigates why, one by one, using 15 databases collected daily (payment-verified indie revenue, App Store / Google Play charts, Meta / Google / TikTok ad libraries, GitHub, Product Hunt, Hacker News, X). This repo connects it to your agent: a remote MCP server (`https://stringers.io/mcp/{token}`, tools `feed` / `plays` / `hot` / `products` / `data`), a Claude Code plugin, an Agent Skill and a CLI. English site: [stringers.io/en/](https://stringers.io/en/); sign in with Google to get a token.
 
 ## 30 秒接上
 
-1. 打开 [stringers.io](https://stringers.io),右上角**登录**(手机号 + 验证码,未注册的自动建号)。
+1. 打开 [stringers.io](https://stringers.io),**登录**(手机号 + 验证码,或 Google 账号;未注册的自动建号)。
 2. 点**配置 agent**,复制那段话,发给你的 agent。
 3. 它自己把配置加好。接通以后直接问。
 
@@ -64,27 +68,26 @@ url = "https://stringers.io/mcp/<token>"
 
 ## 能问什么
 
-- 最近有什么适合用来练手的独立开发项目?
-- 今天的头条是什么?跟我有没有关系?
-- 最近有哪些正在爆的单品?哪个适合我跟?
-- 我想做一个给 Claude 用的 MCP 工具,这个方向现在谁在做、赚到钱了吗?
+- 今天有哪些小产品突然涨起来了?各自是为什么涨的?
+- 最近靠投广告起量的 App 有哪些?它们的素材是怎么写的?
+- 我做了一个开源工具,没人知道。有没有能照着做的起量打法?
 - 最近 30 天收入涨得最快的 AI 视频类独立产品是哪几个?各自怎么获客的?
-- 按我的情况出一份今天的简报:只看适合 iOS 独立开发、不碰买量的方向。
+- 我想做一个给 Claude 用的 MCP 工具,现在谁在做、赚到钱了吗?
+- 我一个人、会前端、每晚两小时,最近涨起来的东西里哪个我能跟?
 
 ## 工具
 
 | 工具 | 做什么 |
 |---|---|
-| `today` | 今天的简报:头条和再看三条(评级、判断、钱、链接) |
-| `hot` | 爆款单品:编辑每天从各库挑的、正在爆而且小团队有机会的单个产品,带数字(来源和日期)、为什么在爆、对你的机会、相关方向;`past=true` 连已下榜的也给 |
-| `products` | 在涨的单个产品:移动端 App、GitHub 开源项目、Chrome 插件,每个都研究过为什么跑出来、怎么跟,并给了等级;`sec` 选板块(`apps` / `github` / `chrome`),`grade`、`q` 筛,`key` 读整篇文章;`growth="关键词"` 按「怎么起量」搜案例,`key` 加 `part="growth"` 只读它怎么拿到用户(已经有产品、问怎么推广时用) |
-| `directions` | 全部方向的一行摘要,可按评级(`grade="SA"`)或关键词(`q`)筛 |
-| `direction` | 一个方向的完整判断:结论、为什么这个级、钱在哪、谁在做、什么情况算判断错了、各维度证据 |
+| `feed` | 市场动态:数据上突然涨起来的小产品,每条都逐个调查过为什么是这几天涨。不带参数给最新一天;`day` 看某一天;`q` 按短词在全部日期里搜;`slug` 读一条的完整调查(定位、对手、时间线、出处、哪些没查实) |
+| `plays` | 打法:从这些调查里归纳的做法,每条有分步骤、真实案例(带数字和日期)、照做却没成的反例、适合谁、什么时候不灵。不带参数给清单;`id="p04"` 读全文;`q` 搜 |
+| `hot` | 爆款单品:编辑每天从各库挑的、正在爆而且小团队有机会的单个产品,带数字(来源和日期)、为什么在爆、对你的机会;`past=true` 连已下榜的也给 |
+| `products` | 在涨的单个产品:移动端 App、GitHub 开源项目、Chrome 插件、网站,每个都研究过为什么跑出来、怎么跟,并给了等级;`sec` 选板块(`apps` / `github` / `chrome` / `web`),`grade`、`q` 筛,`key` 读整篇文章;`growth="关键词"` 按「怎么起量」搜案例,`key` 加 `part="growth"` 只读它怎么拿到用户(已经有产品、问怎么推广时用) |
 | `data` | 直接查一个原始库(只读):`lib` 是库名,`args` 是参数;第一次查某个库先 `args="schema"` |
 
-**评级 = 成功率**:一两个人、几个月,把它做出来并赚到钱的概率。主看窗口期(是不是刚起来)和有多赚钱(有没有校验过的实收、有几家在赚)。
+**产品的等级**:现在跟进它是不是好机会,也就是一两个人、几个月做出来并赚到钱的概率。S 最值得跟,E 别碰。GitHub 项目按「能不能也拿到 star」判断,不谈钱。
 
-S 正在爆发 · A 值得一试 · B 可能有机会 · C 值得参考(方向别照做,打法值得学) · D 希望较小 · E 不太靠谱
+> 以前的约 90 个「方向」长文和评级(工具 `today` / `directions` / `direction`)2026-11-12 起停止更新,工具已撤下。存档还在 [stringers.io/all.html](https://stringers.io/all.html)。
 
 ### 能查的库
 
@@ -110,10 +113,11 @@ S 正在爆发 · A 值得一试 · B 可能有机会 · C 值得参考(方向�
 
 ## English
 
-**Stringers is an MCP server for product research**: it gives your AI agent (Claude Code, Cursor, Codex…) read access to 15 databases we collect every day, plus our finished verdicts on about 90 small-product opportunities.
+**Stringers is an MCP server for product research**: it gives your AI agent (Claude Code, Cursor, Codex…) read access to 15 databases we collect every day, plus our daily investigations into which small products suddenly took off and why, and the playbooks we distilled from them.
 
 Ask your agent things like:
 
+- Which small products took off this week, and what drove each one?
 - Which indie video tools make more than $5,000 a month, and how do they get users?
 - Which apps released in the last 60 days are gaining installs fastest?
 - Where do my competitors advertise — Meta, Google or TikTok — and are they scaling up?
@@ -139,13 +143,13 @@ Ask your agent things like:
 
 Each link shows example questions, a real query with today's output, and what the data cannot prove. Workflows: [product research](https://stringers.io/en/tools/product-research-with-claude-code.html) · [validate an idea](https://stringers.io/en/tools/validate-a-product-idea.html) · [competitor ads](https://stringers.io/en/tools/competitor-ad-research.html) · [rising apps](https://stringers.io/en/tools/find-rising-apps.html) · [first users](https://stringers.io/en/tools/get-first-users.html).
 
-Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://stringers.io/mcp/<token>`, tools `today` / `hot` / `products` / `directions` / `direction` / `data`. Free during beta (200 queries a day). The written verdicts are in Chinese with an English site under [stringers.io/en/](https://stringers.io/en/). Get your personal URL by signing in with Google at [stringers.io/en/start.html](https://stringers.io/en/start.html).
+Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://stringers.io/mcp/<token>`, tools `feed` (daily breakouts, each investigated) / `plays` (playbooks with steps, cases and counter-examples) / `hot` / `products` / `data`. Free during beta (200 queries a day). Tool output is in Chinese (your agent answers in your language); the site is in English under [stringers.io/en/](https://stringers.io/en/). Get your personal URL by signing in with Google at [stringers.io/en/start.html](https://stringers.io/en/start.html).
 
 ## 限额
 
-测试阶段免费。每个 token 每天查库 200 次,其中 X 实时查询 50 次;每次结果最多 50 行。判断层(`today` / `hot` / `products` / `directions` / `direction`)不算在查库次数里。
+测试阶段免费。每个 token 每天查库 200 次,其中 X 实时查询 50 次;每次结果最多 50 行。`feed` / `plays` / `hot` / `products` 不算在查库次数里。
 
-我们会记下你的 agent 查了什么,以及它转述的「你这次想弄清什么」(工具的可选参数 `ask`,一句话、不带个人信息),用来知道大家关心什么、该补哪些数据;手机号只用来认出你。这些都不会公开。
+我们会记下你的 agent 查了什么,以及它转述的「你这次想弄清什么」(工具的可选参数 `ask`,一句话、不带个人信息),用来知道大家关心什么、该补哪些数据;手机号或 Google 账号只用来认出你。这些都不会公开。
 
 ## 命令行(可选)
 
@@ -154,30 +158,33 @@ Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://st
 ```bash
 curl -fsSL https://raw.githubusercontent.com/komako-workshop/stringers/main/cli/stringer -o ~/.local/bin/stringer && chmod +x ~/.local/bin/stringer
 
-stringer today                  # 今天的简报
-stringer list --grade SA        # 正在爆发 / 值得一试
-stringer show 043               # 一个方向的全部判断
-export STRINGER_KEY=wt_…        # 查库的 token(或写到 ~/.config/stringer/key;整条地址也行)
+export STRINGER_KEY=wt_…        # token(或写到 ~/.config/stringer/key;整条地址也行)
+stringer feed                   # 市场动态,最新一天
+stringer feed -q 广告            # 在全部日期里搜
+stringer feed <slug>            # 一条动态的完整调查
+stringer plays                  # 打法清单
+stringer plays p04              # 一条打法全文
+stringer products --sec apps --grade AB   # 在涨的产品
 stringer libs                   # 能查的库
 stringer schema indie           # 先看口径和边界
 stringer indie top --min 1000   # 参数就是各库命令的参数
 stringer mcp                    # 以 stdio MCP 跑
 ```
 
-`today` / `list` / `show` / `status` 不要 token。
+除了 `status` 都要 token;没有 token 时 `stringer feed` 退回读首页的公开 Markdown 版。`list` / `show <编号>` 还能读已停更的方向存档。
 
 ## skill(可选)
 
-[`skills/stringer/SKILL.md`](skills/stringer/SKILL.md) 教 agent 怎么用这些判断:四种常见问法怎么答、评级怎么转述、什么时候去查库。接了 MCP 就够用;想让回答更稳,再装它:
+[`skills/stringer/SKILL.md`](skills/stringer/SKILL.md) 教 agent 怎么用这些调查:几种常见问法怎么答、等级怎么转述、什么时候去查库。接了 MCP 就够用;想让回答更稳,再装它:
 
 - Claude Code:装上面的插件就带了;或者把 `skills/stringer/` 拷到 `~/.claude/skills/stringer/`
 - Cursor:内容放进 `.cursor/rules/stringer.mdc`
 
-没接 MCP 也能用:skill 会让 agent 直接读站点的公开 json(`/api/today.json`、`/api/all.json`),只是查不了库。
+没接 MCP 也能用一部分:skill 会让 agent 读首页的公开 Markdown 版(`https://stringers.io/index.md`,近几天的市场动态)和 `/api/apps.json` 这类公开 json,只是读不了每条的完整调查和打法,也查不了库。
 
 ## 反馈
 
-数字不对、某个方向判断错了、想要哪个库、哪个客户端接不上:开 [issue](https://github.com/komako-workshop/stringers/issues)。
+数字不对、某条调查的原因找错了、想要哪个库、哪个客户端接不上:开 [issue](https://github.com/komako-workshop/stringers/issues)。
 
 ## 许可
 
