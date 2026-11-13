@@ -6,7 +6,7 @@
   stringer plays [-q 词]           打法:从这些调查里归纳的、能照着做的做法
   stringer plays p04               一条打法全文:分步骤、案例、反例、适合谁
   stringer hot                     编辑挑的爆款单品
-  stringer ads <App>               一个 App 在 Meta / Google / TikTok 投什么广告:在投多少、投了多久、文案、广告库原页链接
+  stringer ads <App>               一个 App 在 Meta / Google / TikTok / 苹果投什么广告:在投多少、投了多久、文案、广告库原页链接
                                    (App = 商店链接、App Store id、Play 包名或名字)
   stringer products [--sec apps] [--grade AB] [-q 词] [--growth 正则] [--key K [--part growth]]  在涨的产品(App / GitHub / Chrome 插件 / 网站)
   stringer status                  16 个库今天跑完没有、数据到哪天
@@ -244,7 +244,7 @@ def mcp():
         {'name': 'plays', 'description': '打法:从市场动态的调查里归纳的、小团队能照着做的做法,每条有分步骤、真实案例、照做却没成的反例、适合谁。不带参数给清单;id="p03" 读全文;q 按短词搜。',
          'inputSchema': {'type': 'object', 'properties': {'id': {'type': 'string'}, 'q': {'type': 'string'}}}},
         {'name': 'hot', 'description': '爆款单品:编辑每天挑的、正在爆而且小团队有机会的单个产品。past=true 连已下榜的也给。', 'inputSchema': {'type': 'object', 'properties': {'past': {'type': 'boolean'}}}},
-        {'name': 'ads', 'description': '一个 App 在 Meta(Facebook / Instagram)、Google(搜索 / YouTube / Play)、TikTok(只有投欧洲的)上投什么广告:每个平台在投 / 已停 / 查过没投 / 没查过,在投条数、近 7 / 30 天新上、最久投了几天,投得最久和最新的广告(文案、CTA、版本数、广告库原页链接)。app = 商店链接、App Store 数字 id、Play 包名或名字。花费不公开,不估。',
+        {'name': 'ads', 'description': '一个 App 在 Meta(Facebook / Instagram)、Google(搜索 / YouTube / Play)、TikTok(只有投欧洲的)、苹果 App Store 搜索广告(只有 iOS、投欧盟的)上投什么广告:每个平台在投 / 已停 / 查过没投 / 没查过,在投条数、近 7 / 30 天新上、最久投了几天,投得最久和最新的广告(文案、CTA、版本数、视频、广告库原页链接)。app = 商店链接、App Store 数字 id、Play 包名或名字。花费不公开,不估。',
          'inputSchema': {'type': 'object', 'properties': {'app': {'type': 'string'}}, 'required': ['app']}},
         {'name': 'products', 'description': '在涨的单个产品(移动端 App / GitHub 项目 / Chrome 插件 / 网站),每个都研究过为什么跑出来并给了等级(S 最值得跟,E 别碰)。sec 选 apps / github / chrome / web;grade、q 筛;key 读整篇;growth 是正则,按「怎么起量」搜案例;key 加 part="growth" 只读它怎么拿到用户。',
          'inputSchema': {'type': 'object', 'properties': {'sec': {'type': 'string'}, 'grade': {'type': 'string'}, 'q': {'type': 'string'}, 'key': {'type': 'string'}, 'growth': {'type': 'string'}, 'part': {'type': 'string'}}}},

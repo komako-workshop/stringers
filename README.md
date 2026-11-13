@@ -81,7 +81,7 @@ url = "https://stringers.io/mcp/<token>"
 |---|---|
 | `feed` | 市场动态:数据上突然涨起来的小产品,每条都逐个调查过为什么是这几天涨。不带参数给最新一天;`day` 看某一天;`q` 按短词在全部日期里搜;`slug` 读一条的完整调查(定位、对手、时间线、出处、哪些没查实) |
 | `plays` | 打法:从这些调查里归纳的做法,每条有分步骤、真实案例(带数字和日期)、照做却没成的反例、适合谁、什么时候不灵。不带参数给清单;`id="p04"` 读全文;`q` 搜 |
-| `ads` | 一个 App 在 Meta(Facebook / Instagram)、Google(搜索 / YouTube / Play)、TikTok(只有投欧洲的)上投什么广告:每个平台在投 / 已停 / 查过没投 / 没查过,在投条数、近 7 / 30 天新上、最久投了几天;投得最久和最新的广告(文案、CTA、版本数、广告库原页链接)。`app` = 商店链接、App Store id、Play 包名或名字。花费不公开,我们不估 |
+| `ads` | 一个 App 在 Meta(Facebook / Instagram)、Google(搜索 / YouTube / Play)、TikTok(只有投欧洲的)、苹果 App Store 搜索广告(只有 iOS、投欧盟的)上投什么广告:每个平台在投 / 已停 / 查过没投 / 没查过,在投条数、近 7 / 30 天新上、最久投了几天;投得最久和最新的广告(文案、CTA、版本数、视频、广告库原页链接)。`app` = 商店链接、App Store id、Play 包名或名字。花费不公开,我们不估 |
 | `hot` | 爆款单品:编辑每天从各库挑的、正在爆而且小团队有机会的单个产品,带数字(来源和日期)、为什么在爆、对你的机会;`past=true` 连已下榜的也给 |
 | `products` | 在涨的单个产品:移动端 App、GitHub 开源项目、Chrome 插件、网站,每个都研究过为什么跑出来、怎么跟,并给了等级;`sec` 选板块(`apps` / `github` / `chrome` / `web`),`grade`、`q` 筛,`key` 读整篇文章;`growth="关键词"` 按「怎么起量」搜案例,`key` 加 `part="growth"` 只读它怎么拿到用户(已经有产品、问怎么推广时用) |
 | `data` | 直接查一个原始库(只读):`lib` 是库名,`args` 是参数;第一次查某个库先 `args="schema"` |
@@ -144,7 +144,7 @@ Ask your agent things like:
 
 Each link shows example questions, a real query with today's output, and what the data cannot prove. Workflows: [product research](https://stringers.io/en/tools/product-research-with-claude-code.html) · [validate an idea](https://stringers.io/en/tools/validate-a-product-idea.html) · [competitor ads](https://stringers.io/en/tools/competitor-ad-research.html) · [rising apps](https://stringers.io/en/tools/find-rising-apps.html) · [first users](https://stringers.io/en/tools/get-first-users.html).
 
-Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://stringers.io/mcp/<token>`, tools `feed` (daily breakouts, each investigated) / `plays` (playbooks with steps, cases and counter-examples) / `hot` / `products` / `ads` (what ads an app runs on Meta / Google / TikTok, with ad-library links) / `data`. Free during beta (200 queries a day). Tool output is in Chinese (your agent answers in your language); the site is in English under [stringers.io/en/](https://stringers.io/en/). Get your personal URL by signing in with Google at [stringers.io/en/start.html](https://stringers.io/en/start.html).
+Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://stringers.io/mcp/<token>`, tools `feed` (daily breakouts, each investigated) / `plays` (playbooks with steps, cases and counter-examples) / `hot` / `products` / `ads` (what ads an app runs on Meta / Google / TikTok / Apple Search Ads, with ad-library links) / `data`. Free during beta (200 queries a day). Tool output is in Chinese (your agent answers in your language); the site is in English under [stringers.io/en/](https://stringers.io/en/). Get your personal URL by signing in with Google at [stringers.io/en/start.html](https://stringers.io/en/start.html).
 
 ## 限额
 
@@ -165,7 +165,7 @@ stringer feed -q 广告            # 在全部日期里搜
 stringer feed <slug>            # 一条动态的完整调查
 stringer plays                  # 打法清单
 stringer plays p04              # 一条打法全文
-stringer ads com.freereels.app  # 一个 App 在 Meta / Google / TikTok 投什么广告(也收商店链接、App Store id、名字)
+stringer ads com.freereels.app  # 一个 App 在 Meta / Google / TikTok / 苹果投什么广告(也收商店链接、App Store id、名字)
 stringer products --sec apps --grade AB   # 在涨的产品
 stringer libs                   # 能查的库
 stringer schema indie           # 先看口径和边界
