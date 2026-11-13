@@ -3,7 +3,7 @@
   "name": "io.github.komako-workshop/stringers",
   "title": "什么值得做 Stringers",
   "description": "Which small products took off today and why, each investigated, plus playbooks; 15 databases",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "repository": { "url": "https://github.com/komako-workshop/stringers", "source": "github" },
   "websiteUrl": "https://stringers.io",
   "remotes": [
