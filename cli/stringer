@@ -1,14 +1,24 @@
 #!/usr/bin/env python3
 """stringer:「什么值得做」(stringers.io)的命令行。只用标准库,一个文件。
 
+  stringer waves [-q 词] [--all-ages] [--min-r3e N] [--min-rev 美元] [--sort r3e|r3|ne|toprv|newest] [--limit N]
+                                   赛道:一件具体的事,先有一家做出量、别人再跟进来做;默认近 12 个月首发的,按「近 3 个月新进且赚到钱的家数」排
+  stringer waves --solo [-q 词] [--sort lo|rv|rn|newest] [--include-uncloneable]
+                                   早鸟新苗子:已经在赚钱、还没人跟的新产品(默认去掉政务 / 银行 / 硬件配套这类个人做不了的)
+  stringer waves --key <K>         一条赛道的完整档案;K 也可以是任意 App 的 key / 商店链接 / 包名(反查它在哪条赛道、第几个进场)或赛道中文名
+  stringer apps --key <App>        一个 App 的全景档案:数字和区间、所在赛道、四个平台的投放、同开发者的其他 App、商店介绍、调查稿
+                                   (App = ios_123 / play_com.x、商店链接、App Store id、Play 包名或名字)
+  stringer apps --pattern '正则' [--rev-min 美元] [--age-max 天] [--small-team] [--store ios|play] [--category 品类] [--ads active|none|unchecked] [--sort …] [--limit N]
+                                   按意思在 52 万个 App 的商店介绍全文里找一类 App,如 --pattern 'kaleidoscope|万花筒|mirror camera'
+  stringer apps --sql 'select …'   对 App 库跑一条只读 DuckDB SQL(表 apps / research / ads / daily)
+  stringer apps [--category 品类] [-q 关键词] [--rev-min …] [--age-max …] [--small-team] …   按条件筛一批;--stats 品类 看一个品类的概况
   stringer feed [--day 2026-11-11] [-q 词]  市场动态:数据上突然涨起来的小产品,逐条查过为什么涨(不带参数 = 最新一天)
   stringer feed <slug>             一条动态的完整调查:定位、对手、时间线、出处
   stringer plays [-q 词]           打法:从这些调查里归纳的、能照着做的做法
   stringer plays p04               一条打法全文:分步骤、案例、反例、适合谁
-  stringer hot                     编辑挑的爆款单品
   stringer ads <App>               一个 App 在 Meta / Google / TikTok / 苹果投什么广告:在投多少、投了多久、文案、广告库原页链接
                                    (App = 商店链接、App Store id、Play 包名或名字)
-  stringer products [--sec apps] [--grade AB] [-q 词] [--growth 正则] [--key K [--part growth]]  在涨的产品(App / GitHub / Chrome 插件 / 网站)
+  stringer products [--sec apps] [--grade AB] [-q 词] [--growth 正则] [--key K [--part growth]]  研究过的在涨产品(App / GitHub / Chrome 插件 / 网站),--growth 按获客做法搜案例
   stringer status                  16 个库今天跑完没有、数据到哪天
   stringer libs                    能查的库
   stringer schema <库>             某个库的说明(表、口径、边界);第一次查一个库先看它
@@ -17,7 +27,7 @@
 
 除了 status 都要 token:环境变量 STRINGER_KEY 或 ~/.config/stringer/key(wt_ 开头的 token,或整条 https://stringers.io/mcp/<token> 地址都行)。
 没有 token 时 stringer feed 退回读首页的 Markdown 版(https://stringers.io/index.md,公开)。
-约 90 个「方向」的长文和评级 2026-11-12 起停止更新;stringer list / show <编号> 还能读那份存档。
+约 90 个「方向」的长文和评级 2026-11-12 起停止更新;stringer list / show <编号> 还能读那份存档。爆款单品(stringer hot)2026-11-07 起停止更新,找方向用 waves,看最近在涨的用 feed。
 token 在 https://stringers.io 右上角登录后「配置 agent」里拿。"""
 import json, os, sys, urllib.request, urllib.parse, urllib.error
 
@@ -52,7 +62,7 @@ def key():
 
 def get(url, timeout=150):
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'stringer-cli/0.4'}), timeout=timeout) as r:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'stringer-cli/0.5'}), timeout=timeout) as r:
             return r.read().decode('utf-8', 'replace')
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8', 'replace')[:300]
@@ -157,14 +167,14 @@ def data(lib, args):
 
 
 def tool(name, args):
-    """调远程 MCP 门的一个工具(feed / plays / hot / products / ads),返回文本。"""
+    """调远程 MCP 门的一个工具(走 MCP 的 JSON-RPC),返回文本。"""
     k = key()
     if not k: sys.exit('要 token:export STRINGER_KEY=wt_…(或写到 ~/.config/stringer/key)。到 https://stringers.io 右上角登录,「配置 agent」里能看到')
     k = k.rsplit('/mcp/', 1)[-1].strip('/')
     url = f'{SITE}/mcp/{k}'
 
     def rpc(method, params, sid=None, i=1):
-        h = {'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'User-Agent': 'stringer-cli/0.4'}
+        h = {'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'User-Agent': 'stringer-cli/0.5'}
         if sid: h['Mcp-Session-Id'] = sid
         try:
             with urllib.request.urlopen(urllib.request.Request(url, json.dumps({'jsonrpc': '2.0', 'id': i, 'method': method, 'params': params}).encode(), h), timeout=150) as r:
@@ -174,10 +184,85 @@ def tool(name, args):
         d = [l[5:].strip() for l in t.splitlines() if l.startswith('data:')]
         return sid, json.loads(d[-1] if d else t)
 
-    sid, _ = rpc('initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'stringer-cli', 'version': '0.4'}})
+    sid, _ = rpc('initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'stringer-cli', 'version': '0.5'}})
     _, r = rpc('tools/call', {'name': name, 'arguments': args}, sid, 2)
     if r.get('error'): sys.exit(str(r['error'].get('message', r['error'])))
     return '\n'.join(c.get('text', '') for c in r.get('result', {}).get('content', []))
+
+
+def call_tool(name, args):
+    """调一个工具,纯文本进出:POST {SITE}/mcp/<token>/call {"tool", "args"}。服务端没有这个口(404 / 405)时退回走 MCP。"""
+    k = key()
+    if not k: sys.exit('要 token:export STRINGER_KEY=wt_…(或写到 ~/.config/stringer/key)。到 https://stringers.io 右上角登录,「配置 agent」里能看到')
+    k = k.rsplit('/mcp/', 1)[-1].strip('/')
+    req = urllib.request.Request(f'{SITE}/mcp/{k}/call', json.dumps({'tool': name, 'args': args}, ensure_ascii=False).encode('utf-8'),
+                                 {'Content-Type': 'application/json', 'Accept': 'text/plain', 'User-Agent': 'stringer-cli/0.5'})
+    try:
+        with urllib.request.urlopen(req, timeout=150) as r:
+            return r.read().decode('utf-8', 'replace')
+    except urllib.error.HTTPError as e:
+        if e.code in (404, 405): return tool(name, args)
+        sys.exit(e.read().decode('utf-8', 'replace')[:600] or f'HTTP {e.code}')
+    except urllib.error.URLError as e:
+        sys.exit(f'连不上 {SITE}:{e.reason}')
+
+
+def flags(a, vals, bools=None):
+    """拆命令行:vals = {写法: 工具参数名}(后面跟一个值),bools = {写法: (工具参数名, 值)}(开关);剩下的是位置参数。"""
+    out, rest, i, bools = {}, [], 0, bools or {}
+    while i < len(a):
+        if a[i] in vals:
+            if i + 1 >= len(a): sys.exit(f'{a[i]} 后面要跟一个值')
+            out[vals[a[i]]] = a[i + 1]; i += 2
+        elif a[i] in bools: out[bools[a[i]][0]] = bools[a[i]][1]; i += 1
+        elif a[i].startswith('--') and len(a[i]) > 2: sys.exit(f'不认识 {a[i]}。stringer --help 看用法。')
+        else: rest.append(a[i]); i += 1
+    return out, rest
+
+
+WAVES_HELP = """stringer waves:赛道和早鸟新苗子(找方向先看它)
+
+  stringer waves                         近 12 个月首发的赛道,按「近 3 个月新进且赚到钱(估算月入过 $1K)的家数」排
+  stringer waves -q '菜谱|meal'           搜赛道名、定位、分析、成员名字(空格隔开的词都要命中,| 写备选;带 -q 时不限首发时间)
+  stringer waves --all-ages              不限首发时间(全部赛道);--max-age 6 只看近 6 个月首发的
+  stringer waves --min-r3e 2 --min-rev 10000   近 3 个月至少 2 家新进的赚到钱、赛道里最高月入过 1 万美元
+  stringer waves --sort r3|r3e|ne|toprv|newest  --limit 30(最多 50)
+  stringer waves --solo                  早鸟新苗子:近 3 个月首发、已经在赚钱、还没人跟;--sort lo|rv|rn|newest
+  stringer waves --solo --include-uncloneable   连政务 / 银行 / 硬件配套这类个人做不了的也列出来
+  stringer waves --key ios_123           一条赛道的完整档案(成员名单、逐月进场);给任意 App 的 key / 商店链接 / 包名则反查它在哪条赛道、第几个进场"""
+
+APPS_HELP = """stringer apps:App 库(App Store 和 Google Play 约 52 万个 App)
+
+  stringer apps --key <App>              一个 App 的全景档案(App = ios_123 / play_com.x、商店链接、App Store id、Play 包名或名字)
+  stringer apps --pattern 'kaleidoscope|万花筒'   按意思找:正则搜名字、简介、赛道名、商店介绍全文;可叠下面的条件
+  stringer apps --sql 'select category, count(*) from apps where revenue>=10000 group by 1 order by 2 desc'   只读 DuckDB SQL
+  stringer apps --stats 语言学习          一个品类的概况
+  stringer apps --category 语言学习 --rev-min 10000 --age-max 180 --small-team   按条件筛
+  条件:--category 品类(逗号隔开可多个) -q 关键词(名字 / 说明里字面匹配) --store ios|play --rev-min / --rev-max 美元 --age-max / --age-min 天
+        --growth-min 百分比 --ads active|none|unchecked --small-team --on-grossing --games(把游戏算进来) --sort rev|growth|newest|rating|ratings|ads|downloads --limit N(最多 40)
+  收入是模型估算,只当量级看。"""
+
+
+def cmd_waves(a):
+    if '-h' in a or '--help' in a: return print(WAVES_HELP)
+    o, rest = flags(a, {'-q': 'q', '--q': 'q', '--key': 'key', '--min-r3e': 'min_r3e', '--min-r3': 'min_r3', '--min-rev': 'min_rev', '--max-age': 'max_age_months', '--sort': 'sort', '--limit': 'limit'},
+                    {'--solo': ('kind', 'solo'), '--all-ages': ('all_ages', True), '--include-uncloneable': ('cloneable_only', False)})
+    if rest and 'key' not in o: o['key'] = ' '.join(rest)
+    print(call_tool('waves', o))
+
+
+def cmd_apps(a):
+    if '-h' in a or '--help' in a: return print(APPS_HELP)
+    o, rest = flags(a, {'--key': 'key', '--pattern': 'pattern', '--sql': 'sql', '--category': 'category', '-q': 'keyword', '--q': 'keyword', '--keyword': 'keyword', '--store': 'store',
+                        '--rev-min': 'rev_min', '--rev-max': 'rev_max', '--age-max': 'age_max_days', '--age-min': 'age_min_days', '--growth-min': 'growth_min', '--ads': 'ads',
+                        '--sort': 'sort', '--limit': 'limit', '--stats': 'stats'},
+                    {'--small-team': ('small_team', True), '--on-grossing': ('on_grossing', True), '--games': ('include_games', True)})
+    if rest and 'key' not in o: o['key'] = ' '.join(rest)
+    if not o: return print(APPS_HELP)
+    print(call_tool('apps', o))
+
+
+HOT_GONE = 'hot(爆款单品)2026-11-07 起停止更新,已经下线。找方向用 stringer waves(赛道)和 stringer waves --solo(早鸟新苗子);看最近在涨的用 stringer feed。'
 
 
 def opts(a, flags):
@@ -204,7 +289,7 @@ def cmd_plays(a):
 
 
 def cmd_hot(a):
-    print(tool('hot', opts(a, {})[0]))
+    print(HOT_GONE)        # 老脚本里还有 stringer hot 的不至于报错:给一句去向,正常退出
 
 
 def cmd_ads(a):
@@ -239,14 +324,25 @@ def cmd_lib(lib, rest):
 # ---------------------------------------------------------------- stdio MCP(最小实现:initialize / tools/list / tools/call)
 def mcp():
     tools = [
+        {'name': 'waves', 'description': '赛道和早鸟新苗子,找方向先用它。赛道 = 一件具体的事,先有一家做出量,别人再一家家跟进来做;每条知道谁领头、谁第几个进场、各家估算月入。不带参数 = 近 12 个月首发的赛道,按「近 3 个月新进且赚到钱(月入过 $1K)的家数」排;'
+         'kind="solo" = 已经在赚钱、还没人跟的新产品。q 搜关键词或正则(| 写备选);all_ages / max_age_months 管首发时间;min_r3e、min_r3、min_rev 收窄;sort 换排序;cloneable_only=false 连政务 / 银行 / 硬件配套也给。'
+         'key 给赛道的 key 读完整档案(成员名单、逐月进场),给任意 App 的 key / 商店链接 / 包名反查它在哪条赛道、第几个进场。',
+         'inputSchema': {'type': 'object', 'properties': {'kind': {'type': 'string'}, 'key': {'type': 'string'}, 'q': {'type': 'string'}, 'max_age_months': {'type': 'integer'}, 'all_ages': {'type': 'boolean'},
+                                                          'min_r3e': {'type': 'integer'}, 'min_r3': {'type': 'integer'}, 'min_rev': {'type': 'number'}, 'cloneable_only': {'type': 'boolean'}, 'sort': {'type': 'string'}, 'limit': {'type': 'integer'}}}},
+        {'name': 'apps', 'description': 'App 库:App Store 和 Google Play 约 52 万个 App,带估算月收入、增长、评分、投放、开发者体量、商店介绍全文。key = 一个 App 的全景档案(数字和区间、所在赛道、四个平台的投放、同开发者的其他 App、商店介绍、调查稿;'
+         'key 可以是 ios_123 / play_com.x、商店链接、App Store id、包名或名字);pattern = 正则按意思找一类 App(搜商店介绍全文,英文中文说法用 | 写一起),可叠筛选条件;sql = 一条只读 DuckDB SQL(表 apps / research / ads / daily);'
+         'stats = 一个品类的概况;都不给 = 按条件筛(category、keyword、store、rev_min / rev_max、age_max_days / age_min_days、growth_min、ads、small_team、on_grossing、include_games、sort、limit)。收入是模型估算,只当量级看。',
+         'inputSchema': {'type': 'object', 'properties': {'key': {'type': 'string'}, 'pattern': {'type': 'string'}, 'sql': {'type': 'string'}, 'stats': {'type': 'string'}, 'category': {'type': 'string'}, 'keyword': {'type': 'string'},
+                                                          'store': {'type': 'string'}, 'rev_min': {'type': 'number'}, 'rev_max': {'type': 'number'}, 'age_max_days': {'type': 'integer'}, 'age_min_days': {'type': 'integer'},
+                                                          'growth_min': {'type': 'number'}, 'rating_min': {'type': 'number'}, 'rating_max': {'type': 'number'}, 'ratings_min': {'type': 'integer'}, 'ads': {'type': 'string'},
+                                                          'small_team': {'type': 'boolean'}, 'on_grossing': {'type': 'boolean'}, 'include_games': {'type': 'boolean'}, 'sort': {'type': 'string'}, 'limit': {'type': 'integer'}}}},
         {'name': 'feed', 'description': '市场动态:数据上突然涨起来的小产品(App、开源项目、插件、网站、独立产品收入),每条都逐个调查过为什么是这几天涨,每天更新。不带参数给最新一天;day="2026-11-10" 看某一天;q 按短词在全部日期里搜;slug 读一条的完整调查(定位、对手、时间线、出处)。问「最近什么在涨」「某个产品为什么火了」先用它。',
          'inputSchema': {'type': 'object', 'properties': {'day': {'type': 'string'}, 'q': {'type': 'string'}, 'slug': {'type': 'string'}}}},
         {'name': 'plays', 'description': '打法:从市场动态的调查里归纳的、小团队能照着做的做法,每条有分步骤、真实案例、照做却没成的反例、适合谁。不带参数给清单;id="p03" 读全文;q 按短词搜。',
          'inputSchema': {'type': 'object', 'properties': {'id': {'type': 'string'}, 'q': {'type': 'string'}}}},
-        {'name': 'hot', 'description': '爆款单品:编辑每天挑的、正在爆而且小团队有机会的单个产品。past=true 连已下榜的也给。', 'inputSchema': {'type': 'object', 'properties': {'past': {'type': 'boolean'}}}},
         {'name': 'ads', 'description': '一个 App 在 Meta(Facebook / Instagram)、Google(搜索 / YouTube / Play)、TikTok(只有投欧洲的)、苹果 App Store 搜索广告(只有 iOS、投欧盟的)上投什么广告:每个平台在投 / 已停 / 查过没投 / 没查过,在投条数、近 7 / 30 天新上、最久投了几天,投得最久和最新的广告(文案、CTA、版本数、视频、广告库原页链接)。app = 商店链接、App Store 数字 id、Play 包名或名字。花费不公开,不估。',
          'inputSchema': {'type': 'object', 'properties': {'app': {'type': 'string'}}, 'required': ['app']}},
-        {'name': 'products', 'description': '在涨的单个产品(移动端 App / GitHub 项目 / Chrome 插件 / 网站),每个都研究过为什么跑出来并给了等级(S 最值得跟,E 别碰)。sec 选 apps / github / chrome / web;grade、q 筛;key 读整篇;growth 是正则,按「怎么起量」搜案例;key 加 part="growth" 只读它怎么拿到用户。',
+        {'name': 'products', 'description': '研究过的在涨产品(移动端 App / GitHub 项目 / Chrome 插件 / 网站,三千多个),每个都研究过为什么跑出来、用户从哪来,并给了等级(S 最值得跟,E 别碰)。主要用来按获客做法搜实证案例:growth 是正则,按「怎么起量」搜;key 加 part="growth" 只读它怎么拿到用户。sec 选 apps / github / chrome / web;grade、q 筛;key 读整篇。找 App 的方向用 waves,筛全量 App 用 apps。',
          'inputSchema': {'type': 'object', 'properties': {'sec': {'type': 'string'}, 'grade': {'type': 'string'}, 'q': {'type': 'string'}, 'key': {'type': 'string'}, 'growth': {'type': 'string'}, 'part': {'type': 'string'}}}},
         {'name': 'data', 'description': '直接查一个数据层(只读)。lib:' + ', '.join(LIBS) + '。args 是该库命令的参数,如 "coverage"、"top --min 1000"、\'search "stock checker" --cc us --top 8\';'
          '第一次用某个库先 args="schema" 看说明,再 "coverage" 看边界;某子命令参数不清楚就 "<子命令> --help"。多词关键词加引号。',
@@ -263,9 +359,13 @@ def mcp():
         return buf.getvalue()
 
     def call(name, args):
-        if name in ('feed', 'plays', 'hot', 'products', 'ads'):
+        if name in ('waves', 'apps'):
+            try: return call_tool(name, {k: v for k, v in args.items() if v not in ('', None)})
+            except SystemExit as e: return str(e)
+        if name in ('feed', 'plays', 'products', 'ads'):
             try: return tool(name, {k: v for k, v in args.items() if v not in ('', None)})
             except SystemExit as e: return str(e)
+        if name == 'hot': return HOT_GONE
         if name == 'status': return capture(cmd_status, [])
         if name == 'data':
             lib = (args.get('lib') or '').strip()
@@ -285,7 +385,7 @@ def mcp():
         mid, method, params = req.get('id'), req.get('method'), req.get('params') or {}
         if method == 'initialize':
             send({'jsonrpc': '2.0', 'id': mid, 'result': {'protocolVersion': params.get('protocolVersion', '2025-06-18'), 'capabilities': {'tools': {}},
-                                                           'serverInfo': {'name': 'stringer', 'version': '0.4'}, 'instructions': '最近什么在涨、为什么涨看 feed;能照着做的做法看 plays;单个产品的研究看 products / hot;某个 App 在投什么广告看 ads;要原始数据用 data,第一次查某个库先看 schema。每个数字带日期和来自哪个库。'}})
+                                                           'serverInfo': {'name': 'stringer', 'version': '0.5'}, 'instructions': '找方向(哪些事有人跟、跟的人赚没赚到,哪些新产品还没人跟)看 waves;按条件或按意思找 App、看一个 App 的全景档案用 apps;最近什么在涨、为什么涨看 feed;能照着做的做法看 plays,按获客做法搜案例用 products;逐条看某个 App 的广告素材用 ads;要原始数据用 data,第一次查某个库先看 schema。每个数字带日期和来源;App 的月收入是模型估算,只当量级看。'}})
         elif method == 'tools/list':
             send({'jsonrpc': '2.0', 'id': mid, 'result': {'tools': tools}})
         elif method == 'tools/call':
@@ -303,6 +403,8 @@ def main():
     if not a or a[0] in ('-h', '--help', 'help'): return print(__doc__)
     c, rest = a[0], a[1:]
     if c in ('feed', 'today'): return cmd_feed(rest)       # today 是旧名字(方向简报 2026-11-12 停更),现在等于最新一天的市场动态
+    if c == 'waves': return cmd_waves(rest)
+    if c == 'apps': return cmd_apps(rest)
     if c == 'plays': return cmd_plays(rest)
     if c == 'hot': return cmd_hot(rest)
     if c == 'products': return cmd_products(rest)
