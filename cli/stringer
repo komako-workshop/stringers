@@ -6,6 +6,8 @@
   stringer waves --solo [-q 词] [--sort lo|rv|rn|newest] [--include-uncloneable]
                                    早鸟新苗子:已经在赚钱、还没人跟的新产品(默认去掉政务 / 银行 / 硬件配套这类个人做不了的)
   stringer waves --key <K>         一条赛道的完整档案;K 也可以是任意 App 的 key / 商店链接 / 包名(反查它在哪条赛道、第几个进场)或赛道中文名
+  stringer search <一句话或名字> [--rev-min 美元] [--age-max 天] [--small-team] [--store ios|play] [--category 品类] [--limit N] [--offset N]
+                                   在 52 万个 App 里按意思或名字找(名字有别字也行),按相关度排
   stringer apps --key <App>        一个 App 的全景档案:数字和区间、所在赛道、四个平台的投放、同开发者的其他 App、商店介绍、调查稿
                                    (App = ios_123 / play_com.x、商店链接、App Store id、Play 包名或名字)
   stringer apps --pattern '正则' [--rev-min 美元] [--age-max 天] [--small-team] [--store ios|play] [--category 品类] [--ads active|none|unchecked] [--sort …] [--limit N]
@@ -251,6 +253,14 @@ def cmd_waves(a):
     print(call_tool('waves', o))
 
 
+def cmd_search(a):
+    o, rest = flags(a, {'--category': 'category', '--store': 'store', '--rev-min': 'rev_min', '--rev-max': 'rev_max', '--age-max': 'age_max_days', '--age-min': 'age_min_days',
+                        '--limit': 'limit', '--offset': 'offset'}, {'--small-team': ('small_team', True), '--games': ('include_games', True)})
+    if not rest: sys.exit('用法:stringer search <一句话说它做什么,或 App 名字> [--rev-min 美元] [--age-max 天] [--small-team]')
+    o['query'] = ' '.join(rest)
+    print(call_tool('search_apps', o))
+
+
 def cmd_apps(a):
     if '-h' in a or '--help' in a: return print(APPS_HELP)
     o, rest = flags(a, {'--key': 'key', '--pattern': 'pattern', '--sql': 'sql', '--category': 'category', '-q': 'keyword', '--q': 'keyword', '--keyword': 'keyword', '--store': 'store',
@@ -405,6 +415,7 @@ def main():
     if c in ('feed', 'today'): return cmd_feed(rest)       # today 是旧名字(方向简报 2026-11-12 停更),现在等于最新一天的市场动态
     if c == 'waves': return cmd_waves(rest)
     if c == 'apps': return cmd_apps(rest)
+    if c == 'search': return cmd_search(rest)
     if c == 'plays': return cmd_plays(rest)
     if c == 'hot': return cmd_hot(rest)
     if c == 'products': return cmd_products(rest)

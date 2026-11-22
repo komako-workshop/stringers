@@ -14,7 +14,7 @@
 
 这个仓库是接入用的那一层:说明、Claude Code 插件、skill、命令行。采集和服务端不在这里。
 
-> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) helps small teams and indie developers decide what to build: which app niches are being followed by newcomers who actually earn, estimated revenue and ad activity for ~520,000 apps, and which small products suddenly took off each day and why, investigated one by one. It runs on 15 databases collected daily (payment-verified indie revenue, App Store / Google Play charts, Meta / Google / TikTok ad libraries, GitHub, Product Hunt, Hacker News, X). This repo connects it to your agent: a remote MCP server (`https://stringers.io/mcp/{token}`, tools `waves` / `apps` / `ads` / `feed` / `plays` / `products` / `data`), a Claude Code plugin, an Agent Skill and a CLI. English site: [stringers.io/en/](https://stringers.io/en/); sign in with Google to get a token.
+> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) helps small teams and indie developers decide what to build: which app niches are being followed by newcomers who actually earn, estimated revenue and ad activity for ~520,000 apps, and which small products suddenly took off each day and why, investigated one by one. It runs on 15 databases collected daily (payment-verified indie revenue, App Store / Google Play charts, Meta / Google / TikTok ad libraries, GitHub, Product Hunt, Hacker News, X). This repo connects it to your agent: a remote MCP server (`https://stringers.io/mcp/{token}`, tools `list_waves` / `get_wave` / `search_apps` / `list_apps` / `get_app` / `query_sql` / `ads` / `feed` / `plays` / `products` / `data`), a Claude Code plugin, an Agent Skill and a CLI. English site: [stringers.io/en/](https://stringers.io/en/); sign in with Google to get a token.
 
 ## 30 秒接上
 
@@ -84,19 +84,23 @@ url = "https://stringers.io/mcp/<token>"
 
 | 工具 | 做什么 |
 |---|---|
-| `waves` | 赛道和早鸟新苗子,找方向先用它。赛道 = 一件具体的事,先有一家做出量,别人再一家家跟进来做;每条有领头是谁、谁第几个进场、各家估算月入、定位和分析。不带参数给近 12 个月首发的赛道,按「近 3 个月新进且赚到钱(估算月入过 $1K)的家数」排;`kind="solo"` 给已经在赚钱、还没人跟的新产品(默认去掉政务、银行、硬件配套这类个人做不了的,`cloneable_only=false` 全给);`q` 搜关键词或正则;`all_ages`、`max_age_months`、`min_r3e`、`min_r3`、`min_rev`、`sort`、`limit` 收窄和排序;`key` 读一条赛道的全部成员和逐月进场,或者给任意 App 的 key / 商店链接 / 包名,反查它在哪条赛道、第几个进场 |
-| `apps` | App 库:App Store 和 Google Play 约 52 万个 App。`key` 取一个 App 的全景档案,一次给全:数字和区间、所在赛道和第几个进场、四个平台的投放摘要、同开发者的其他 App、另一个商店的同款、近两周走势、商店介绍全文、调查稿(`key` 可以是 `ios_123` / `play_com.x`、商店链接、App Store id、Play 包名或名字);`pattern` 用正则按意思找一类 App(搜名字、简介、赛道名、商店介绍全文,如 `"kaleidoscope\|万花筒\|mirror camera"`),可叠筛选条件;`sql` 跑一条只读 DuckDB SQL(表 `apps` / `research` / `ads` / `daily`);`stats="品类"` 看品类概况;都不给就按 `category`、`keyword`、`store`、`rev_min` / `rev_max`、`age_max_days` / `age_min_days`、`growth_min`、`ads`、`small_team`、`on_grossing`、`sort`、`limit` 筛。收入是模型估算,只当量级看 |
+| `list_waves` | 赛道和早鸟新苗子的列表,找方向先用它。赛道 = 一件具体的事,先有一家做出量,别人再一家家跟进来做。默认按「近 3 个月新进且赚到钱的家数」排,每次 10 条、`offset` 翻页;`kind="solo"` 是已经在赚钱、还没人跟的新产品;`q` 搜关键词,字面没命中会按意思找 |
+| `get_wave` | 一条赛道的完整档案:全部成员、各自月入、逐月进场几家;给任意 App 的 key、商店链接或名字,反查它在哪条赛道、第几个进场 |
+| `search_apps` | 在约 52 万个 App 里按一句话或名字找,按相关度排:`query` 直接写它是做什么的,或者 App 名字(有别字也行);可叠收入、上架时间、小团队等条件 |
+| `list_apps` | 按条件筛一批 App,按收入 / 增长 / 新旧排序,开头给总数,能翻页 |
+| `get_app` | 一个 App 的档案:默认精简(估算月入和区间、所在赛道、各平台在不在投广告、调查稿摘要),`sections` 按需加调查稿全文、商店介绍、同开发者的其他 App、近两周走势 |
+| `query_sql` | 对 App 库跑一条只读 DuckDB SQL,算分布和统计 |
 | `feed` | 市场动态:数据上突然涨起来的小产品,每条都逐个调查过为什么是这几天涨。不带参数给最新一天;`day` 看某一天;`q` 按短词在全部日期里搜;`slug` 读一条的完整调查(定位、对手、时间线、出处、哪些没查实) |
 | `plays` | 打法:从这些调查里归纳的做法,每条有分步骤、真实案例(带数字和日期)、照做却没成的反例、适合谁、什么时候不灵。不带参数给清单;`id="p04"` 读全文;`q` 搜 |
 | `ads` | 深扒一个 App 的买量素材:它在 Meta(Facebook / Instagram)、Google(搜索 / YouTube / Play)、TikTok(只有投欧洲的)、苹果 App Store 搜索广告(只有 iOS、投欧盟的)上投什么广告:每个平台在投 / 已停 / 查过没投 / 没查过,在投条数、近 7 / 30 天新上、最久投了几天;投得最久和最新的广告(文案、CTA、版本数、视频、广告库原页链接)。`app` = 商店链接、App Store id、Play 包名或名字。只想知道它在不在买量,`apps(key=…)` 里已有摘要。花费不公开,我们不估 |
 | `products` | 研究过的在涨产品:三千多个移动端 App、GitHub 开源项目、Chrome 插件、网站,每个都研究过为什么跑出来、用户从哪来,并给了等级。主要用来按获客做法搜实证案例:`growth="关键词"` 按「怎么起量」搜,`key` 加 `part="growth"` 只读它怎么拿到用户(已经有产品、问怎么推广时用);`sec` 选板块(`apps` / `github` / `chrome` / `web`),`grade`、`q` 筛,`key` 读整篇文章。找 App 的方向用 `waves`,筛全量 App 用 `apps` |
 | `data` | 直接查一个原始库(只读):`lib` 是库名,`args` 是参数;第一次查某个库先 `args="schema"` |
 
-**怎么选**:找方向用 `waves`;验一个想法、找一类 App 用 `apps(pattern=…)`;扒一个 App 用 `apps(key=…)`,要逐条看广告再用 `ads`;最近什么在涨用 `feed`;已经有产品、问怎么拿到用户用 `plays` 和 `products(growth=…)`;核对原始数字用 `data`。
+**怎么选**:找方向用 `list_waves`,看一条赛道的成员用 `get_wave`;找某个或某类 App 用 `search_apps`,要按数字排的清单用 `list_apps`;扒一个 App 用 `get_app`,要逐条看广告再用 `ads`;最近什么在涨用 `feed`;已经有产品、问怎么拿到用户用 `plays` 和 `products(growth=…)`;算分布用 `query_sql`,核对原始数字用 `data`。
 
 **App 的收入**都是模型估算,只当量级看,常见误差两三倍;「赚到钱」指估算月入过 1000 美元。**产品的等级**(`products`):现在跟进它是不是好机会,也就是一两个人、几个月做出来并赚到钱的概率。S 最值得跟,E 别碰。GitHub 项目按「能不能也拿到 star」判断,不谈钱。
 
-> 「爆款单品」(工具 `hot`)2026-11-07 起停止更新,工具已撤下;找方向用 `waves`,看最近在涨的用 `feed`。以前的约 90 个「方向」长文和评级(工具 `today` / `directions` / `direction`)2026-11-12 起停止更新,工具也已撤下,存档还在 [stringers.io/all.html](https://stringers.io/all.html)。
+> 「爆款单品」(工具 `hot`)2026-11-07 起停止更新,工具已撤下;找方向用 `list_waves`,看最近在涨的用 `feed`。以前的约 90 个「方向」长文和评级(工具 `today` / `directions` / `direction`)2026-11-12 起停止更新,工具也已撤下,存档还在 [stringers.io/all.html](https://stringers.io/all.html)。
 
 ### 能查的库
 
@@ -137,8 +141,12 @@ Ask your agent things like:
 
 | Tool | What it does |
 |---|---|
-| `waves` | Niches and early birds; start here when looking for a direction. A niche is one specific job that one app proved first and others then followed. Each has the leader, every follower's entry order and estimated monthly revenue, plus our positioning and analysis. No arguments: niches started in the last 12 months, ranked by how many entrants of the last 3 months already earn over $1K/mo. `kind="solo"`: new apps that earn but have no follower yet (government, bank and hardware-companion apps are filtered out by default). `q` searches by keyword or regex; `key` returns one niche's full member list and month-by-month entries, or, given any app key / store URL / package name, tells you which niche it is in and in what position it entered |
-| `apps` | The app library: ~520,000 apps on the App Store and Google Play. `key` returns one app's full dossier in a single call: revenue estimate and range, its niche and entry position, ad activity on four platforms, the developer's other apps, store description, our investigation (`key` accepts `ios_123` / `play_com.x`, a store URL, an App Store id, a package name or an app name). `pattern` finds a kind of app by regex over names, summaries, niche names and full store descriptions (e.g. `"kaleidoscope\|mirror camera"`), combinable with numeric filters. `sql` runs one read-only DuckDB query (tables `apps` / `research` / `ads` / `daily`). `stats` summarises a category. With none of these it filters by `category`, `keyword`, `store`, `rev_min` / `rev_max`, `age_max_days`, `growth_min`, `ads`, `small_team`, `sort`, `limit` |
+| `list_waves` | Niches and early birds; start here when looking for a direction. A niche is one specific job that one app proved first and others then followed. Sorted by how many entrants of the last 3 months are earning; 10 per page; `kind="solo"` lists earning apps with no look-alike yet |
+| `get_wave` | One niche in full: every member, its revenue estimate and entry month; pass any app key, store link or name to find its niche and entry position |
+| `search_apps` | Search ~520,000 apps by a plain-language description or a (possibly misspelled) name, ranked by relevance; combine with revenue, age and team-size filters |
+| `list_apps` | Filter apps by conditions, sorted by revenue / growth / age, with a total count and pagination |
+| `get_app` | One app's profile: concise by default (revenue estimate and range, niche, ad status per platform, research summary); `sections` adds the full write-up, store description, sibling apps, daily trend |
+| `query_sql` | Read-only DuckDB SQL over the app library |
 | `ads` | A deep look at one app's ad creatives on Meta, Google, TikTok (Europe only) and Apple Search Ads (EU only): status per platform, live ad count, longest-running and newest ads with copy, CTA and ad-library links |
 | `feed` | Daily breakouts: small products that suddenly took off (apps, open-source projects, extensions, websites, indie revenue), each investigated for why it happened now |
 | `plays` | Playbooks distilled from those investigations: steps, real cases with numbers and dates, counter-examples, who it fits |
@@ -167,11 +175,11 @@ Revenue figures for apps are model estimates: read them as orders of magnitude (
 
 Each link shows example questions, a real query with today's output, and what the data cannot prove. Workflows: [product research](https://stringers.io/en/tools/product-research-with-claude-code.html) · [validate an idea](https://stringers.io/en/tools/validate-a-product-idea.html) · [competitor ads](https://stringers.io/en/tools/competitor-ad-research.html) · [rising apps](https://stringers.io/en/tools/find-rising-apps.html) · [first users](https://stringers.io/en/tools/get-first-users.html).
 
-Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://stringers.io/mcp/<token>`, tools `waves` / `apps` / `ads` / `feed` / `plays` / `products` / `data` (all read-only and annotated as such, so clients like Codex do not ask for approval on every call). The former `hot` tool stopped updating on 2026-11-07 and has been removed. Free during beta (200 queries a day). Tool output is in Chinese (your agent answers in your language); the site is in English under [stringers.io/en/](https://stringers.io/en/). Get your personal URL by signing in with Google at [stringers.io/en/start.html](https://stringers.io/en/start.html).
+Setup is the same as above: a remote MCP server (Streamable HTTP) at `https://stringers.io/mcp/<token>`, tools `list_waves` / `get_wave` / `search_apps` / `list_apps` / `get_app` / `query_sql` / `ads` / `feed` / `plays` / `products` / `data` (all read-only and annotated as such, so clients like Codex do not ask for approval on every call). The former `hot` tool stopped updating on 2026-11-07 and has been removed. Free during beta (200 queries a day). Tool output is in Chinese (your agent answers in your language); the site is in English under [stringers.io/en/](https://stringers.io/en/). Get your personal URL by signing in with Google at [stringers.io/en/start.html](https://stringers.io/en/start.html).
 
 ## 限额
 
-测试阶段免费。每个 token 每天查库 200 次,其中 X 实时查询 50 次;每次结果最多 50 行。`waves` / `apps` / `feed` / `plays` / `products` / `ads` 不算在查库次数里。
+测试阶段免费。每个 token 每天查库 200 次,其中 X 实时查询 50 次;每次结果最多 50 行。`list_waves` / `get_wave` / `search_apps` / `list_apps` / `get_app` / `query_sql` / `feed` / `plays` / `products` / `ads` 不算在查库次数里。
 
 我们会记下你的 agent 查了什么,以及它转述的「你这次想弄清什么」(工具的可选参数 `ask`,一句话、不带个人信息),用来知道大家关心什么、该补哪些数据;手机号或 Google 账号只用来认出你。这些都不会公开。
 
