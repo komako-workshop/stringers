@@ -1,7 +1,7 @@
 ---
 name: stringer
 description: 「什么值得做」(stringers.io):面向独立开发者和小团队的 App 商业情报库——涵盖热门赛道、早鸟新苗子、52 万个 App 全量档案与投放素材、每日市场动态和增长打法。用户问「现在做什么有机会」「这个想法有没有搞头」「谁在做 X、赚到钱没」「这个 App 怎么做起来的、在不在买量」「最近什么在涨」「我的产品怎么拿到用户」、要一份情报日报时使用。
-version: 0.10.0
+version: 0.11.0
 homepage: https://stringers.io
 metadata: {"openclaw": {"homepage": "https://stringers.io", "emoji": "🧭"}}
 ---
@@ -21,7 +21,7 @@ metadata: {"openclaw": {"homepage": "https://stringers.io", "emoji": "🧭"}}
 接了 `stringer` MCP（`https://stringers.io/mcp/<token>`）：
 
 - `publish_board`：**推荐/盘点/日报必用**。把筛选出的赛道（`wave`）、早鸟（`early`）和具体 App（`app`）打包成一张可交互网页清单（`https://stringers.io/appdb/#b/<id>`），展示图标、月入走势、赛道图标墙、月度进场柱图和 AI 点评；回复开头贴清单页链接，正文重点点名的每个 App 名字上也挂好 `https://stringers.io/appdb/#app/<key>` 详情页链接。
-- `research_app`：**按需深度调研任意 App**。输入 App Store / Google Play 链接、key 或 App 名，当场综合真实评论（含量化痛点卡与原话）、多国榜单、实时 Apple/Meta 广告抓取（含常青素材与 Hook）与联网检索，约 60–115 秒生成永久可分享网页报告（`https://stringers.io/appdb/#app/<key>`）及可下载品牌 PDF（含什么值得做 Logo）；库内已有调查稿则秒返回。
+- `research_app`：**一个 App 的全套调研材料**：输入 App Store / Google Play 链接、key 或名字，一次返回库里关于它的全部真值（收入、差评原文、多国榜单、更新日志、四平台广告素材、已有调查稿），并附一张「还需要你自己联网查什么」的清单。只给数据，联网调查和成文由你自己的模型做。
 - `compare_apps`：**2–3 款竞品并排对比**。一次传入 2–3 个 App，并发拉取月入、下载、多国主力市场、四平台投放与真实 1–2 星差评原文，直接找出共同痛点、各自优势与市场空白。
 
 - `list_waves`：热门赛道列表（只含已有人跟进的赛道）。默认返回 15 条紧凑高密度行，`detail=true` 附完整分析，`offset` 翻页；`store='ios'|'play'` 筛平台，`category` 筛方向/品类，`q` 支持语义+关键词混合搜并按相关度排。

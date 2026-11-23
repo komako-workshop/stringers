@@ -1,7 +1,7 @@
 {
   "name": "stringer",
   "displayName": "什么值得做",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "「什么值得做」(stringers.io):面向独立开发者和小团队的 App 商业情报库——热门赛道、早鸟新苗子、52 万 App 全量档案、1,200 万条真实评论与差评痛点、实时四平台买量素材、按需单品深度调研与可视化清单页。",
   "author": { "name": "stringers.io" },
   "homepage": "https://stringers.io",
