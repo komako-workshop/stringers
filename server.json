@@ -3,7 +3,7 @@
   "name": "io.github.komako-workshop/stringers",
   "title": "什么值得做 Stringers",
   "description": "App intelligence MCP for indie devs & small teams: 400+ app niches, 300+ early-bird apps, 520k apps with 12M+ real reviews, multi-country charts, live Meta/Apple ads & on-demand deep app teardowns",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "repository": { "url": "https://github.com/komako-workshop/stringers", "source": "github" },
   "websiteUrl": "https://stringers.io",
   "remotes": [
