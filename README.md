@@ -14,7 +14,7 @@
 
 这个仓库是接入层：说明、Claude Code 插件、skill、命令行。采集和服务端不在这里。
 
-> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) is an App intelligence MCP server for indie developers and small teams: 400+ app niches (`list_waves` / `get_wave`) showing who started each one and whether recent followers earn; 300+ early-bird apps (`list_early_apps`) earning with no look-alike yet; ~520,000 App Store & Google Play apps with revenue, growth, 4-platform ad creatives and deep research (`search_apps` / `list_apps` / `get_app` / `query_sql`); daily market breakouts (`feed`); and growth playbooks with real cases (`plays`). Remote MCP server: `https://stringers.io/mcp/{token}` (OpenAI `search`/`fetch` connector: `https://stringers.io/mcp/oai/{token}`).
+> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) is an App intelligence MCP server for indie developers and small teams: 400+ app niches (`list_waves` / `get_wave`) showing who started each one and whether recent followers earn; 300+ early-bird apps (`list_early_apps`) earning with no look-alike yet; ~520,000 App Store & Google Play apps with revenue, growth, 4-platform ad creatives and deep research (`search_apps` / `list_apps` / `get_app` / `query_sql`); daily market breakouts (`feed`); and growth playbooks with real cases (`plays`). It is a remote MCP server (Streamable HTTP). Every user gets a personal address that starts with `https://stringers.io/mcp/wt_`: sign in at [stringers.io/en/start.html](https://stringers.io/en/start.html), copy the setup prompt and paste it to your agent. There is no shared or example address; a URL containing a placeholder returns 403. The OpenAI `search`/`fetch` connector uses the same token under `/mcp/oai/`.
 
 ## 30 秒接上
 

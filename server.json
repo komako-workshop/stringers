@@ -12,7 +12,7 @@
       "url": "https://stringers.io/mcp/{token}",
       "variables": {
         "token": {
-          "description": "Your personal token (wt_...): log in at https://stringers.io, then 配置 agent",
+          "description": "Your personal token: 27 characters starting with wt_. Sign in at https://stringers.io/en/start.html (Chinese: https://stringers.io/start.html) and copy your full MCP address; the token is the last path segment. Connecting with the literal {token} placeholder returns 403.",
           "isRequired": true,
           "isSecret": true
         }
