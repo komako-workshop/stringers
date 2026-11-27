@@ -1,4 +1,36 @@
-# stringer:把「什么值得做」接进你的 agent
+# Stringers — App 创业者的 AI 工具箱（移动端 UI 设计 + 52 万 App 商业情报）
+
+**Stringers — Indie Mobile App Builder's AI Skill & MCP**
+
+[中文](#中文) · [English](#english) · [stringers.io](https://stringers.io)
+
+| | 移动端 UI 设计 · Mobile UI design | 52 万 App 商业情报 · 520k-app market intelligence |
+|---|---|---|
+| 是什么 · What | 204 套真实 iOS 界面风格，每套一份 `DESIGN.md`<br>204 real iOS UI styles, one `DESIGN.md` each | 赛道、收入、评论、买量素材、增长打法<br>Niches, revenue, reviews, ad creatives, growth playbooks |
+| 怎么用 · How | Skill，**免登录** · Skill, **zero login** | 远程 MCP，**30 秒拿 token** · Remote MCP, **30-second token** |
+| 安装 · Install | `npx skills add komako-workshop/stringers` | [stringers.io](https://stringers.io) → 配置 agent · [Configure agent](https://stringers.io/en/start.html) |
+
+---
+
+## 中文
+
+### 快速开始 1：移动端 UI 设计（免登录）
+
+```bash
+npx skills add komako-workshop/stringers
+```
+
+装好以后，在 Claude Code、Cursor、Codex 等支持 skill 的 agent 里：
+
+1. **说一句**「用 stringers 帮我设计这个界面」。新做一个 App、把丑界面换皮、去 AI 味，都是这一句。
+2. **挑风格**。AI 挑 3 套反差明显的风格（有浅有深，其中一套大胆的），给你一条 `?pick=` 链接，每套 4 张真实 iOS 截图并排看；都不对味，就去 [stringers.io/styles](https://stringers.io/styles/) 逛全部 204 套，把风格名发回对话。
+3. **落代码**。AI 锁定这套风格的 `DESIGN.md`，看一眼 4 屏参考图，再写 SwiftUI / Expo / React Native 界面，原有功能一个不删。之后的日常小改沿用现有风格，不会再跳出来让你选。
+
+`?pick=` 链接长这样：<https://stringers.io/styles/?pick=oat-margin,amber-roundel,citron-kite>
+
+已经装了 Claude Code 插件的不用另装：插件 0.12.0 起自带同一个 skill。
+
+### 快速开始 2：52 万 App 商业情报 MCP（30 秒拿 token）
 
 [什么值得做](https://stringers.io) 是面向独立开发者和小团队的 **App 商业情报库**，帮你回答两个核心问题：**现在做什么方向有机会；跑出来的产品是怎么拿到用户和赚到钱的。**
 
@@ -12,11 +44,7 @@
 
 网页上是整理好的榜单和调查。接进你自己的 agent（Claude Code、Cursor、Codex、Trae……）之后，它能直接读这五个数据层，再结合**你自己的情况**给出判断。
 
-这个仓库是接入层：说明、Claude Code 插件、skill、命令行。采集和服务端不在这里。
-
-> **English:** Stringers (「什么值得做」, [stringers.io](https://stringers.io)) is an App intelligence MCP server for indie developers and small teams: 400+ app niches (`list_waves` / `get_wave`) showing who started each one and whether recent followers earn; 300+ early-bird apps (`list_early_apps`) earning with no look-alike yet; ~520,000 App Store & Google Play apps with revenue, growth, 4-platform ad creatives and deep research (`search_apps` / `list_apps` / `get_app` / `query_sql`); daily market breakouts (`feed`); and growth playbooks with real cases (`plays`). It is a remote MCP server (Streamable HTTP). Every user gets a personal address that starts with `https://stringers.io/mcp/wt_`: sign in at [stringers.io/en/start.html](https://stringers.io/en/start.html), copy the setup prompt and paste it to your agent. There is no shared or example address; a URL containing a placeholder returns 403. The OpenAI `search`/`fetch` connector uses the same token under `/mcp/oai/`.
-
-## 30 秒接上
+#### 30 秒接上
 
 1. 打开 [stringers.io](https://stringers.io)，**登录**（手机号 + 验证码，或 Google 账号；未注册的自动建号）。
 2. 点**配置 agent**，复制那段话，发给你的 agent。
@@ -30,7 +58,7 @@ https://stringers.io/mcp/wt_xxxxxxxxxxxxxxxxxxxxxxxx
 
 这个地址就是你的 token，别发到公开的地方。泄露了在「配置 agent」里点「换一个新地址」，旧的立刻失效。
 
-## Claude Code 插件
+#### Claude Code 插件
 
 已经有 token 后，在 Claude Code 里：
 
@@ -39,9 +67,9 @@ https://stringers.io/mcp/wt_xxxxxxxxxxxxxxxxxxxxxxxx
 /plugin install stringer@stringers
 ```
 
-安装时会问 token，MCP 和 skill 一起装好。
+安装时会问 token，MCP 和 skill（UI 设计 + 商业情报）一起装好。
 
-## 手动配置
+#### 手动配置
 
 按客户端加一个远程 MCP 服务器：名字 `stringer`，类型 Streamable HTTP，地址填你的专属地址。
 
@@ -68,7 +96,7 @@ url = "https://stringers.io/mcp/<token>"
 
 **只支持本地命令（stdio）的客户端**：装下面的命令行，配置成运行 `stringer mcp`。
 
-## 能问什么
+#### 能问什么
 
 - 最近有哪些 App 赛道新进去的人也能赚到钱？哪些早鸟新苗子刚起步还没人跟？
 - 做「按预算排一周晚饭」这件事的 App 有多少个？各自月入多少、第几个进场、谁在买量？
@@ -76,7 +104,7 @@ url = "https://stringers.io/mcp/<token>"
 - 今天市场动态里有哪些产品突然涨起来了？帮我整理一份我关心领域的日报。
 - 我做了一个工具 App 没人知道，有哪些可照抄的起量打法和实证案例？
 
-## 工具（12 个）
+#### 工具（12 个）
 
 | 工具 | 做什么 |
 |---|---|
@@ -93,11 +121,11 @@ url = "https://stringers.io/mcp/<token>"
 | `feed` | 市场动态：每天突然异动的小产品及原因调查。不带参数给最新一天，`day` 看某天，`q` 搜历史，`slug` 读完整调查 |
 | `plays` | 打法库：归纳好的起量/冷启动/变现打法（清单、`id` 读全文、`q` 搜），并支持 `case_q` 按获客做法搜数千个真实实证案例、`case_key` 读单品获客细节 |
 
-## 限额
+#### 限额
 
 测试阶段免费（免绑卡，支持 Google 登录与海外手机号），全部 11 个工具已标注 `readOnlyHint: true`（Codex 等客户端无需每次弹窗确认）。
 
-## 命令行（可选）
+#### 命令行（可选）
 
 一个 Python 文件，只用标准库：
 
@@ -112,10 +140,152 @@ stringer feed
 stringer plays
 ```
 
-## skill（可选）
+### 仓库里有什么
 
-[`skills/stringer/SKILL.md`](skills/stringer/SKILL.md) 提供了完整的 Big Picture 导览与常用配合方法。接了 MCP 本身就已内建相同的导览说明；想进一步固化习惯可以顺手装上。
+这个仓库是接入层：说明、Claude Code 插件、skill、命令行。采集和服务端不在这里。
 
-## 许可
+[`skills/stringers/`](skills/stringers/SKILL.md) 是一个统一的 skill，按你的问题只加载需要的那一半：做界面读 [`references/design.md`](skills/stringers/references/design.md)，查市场读 [`references/market.md`](skills/stringers/references/market.md)。没接 MCP 时设计这一半照常用。
+
+### 许可
 
 本仓库代码 MIT。网站上的文章、判断和数据版权归「什么值得做」所有，引用请注明出处并附链接。
+
+---
+
+## English
+
+Stringers ([stringers.io](https://stringers.io)) gives your coding agent two things an indie mobile app builder needs: **taste** (204 real iOS UI styles it can build from) and **market data** (what ~520,000 apps earn, and how they got there).
+
+### Quickstart 1: Mobile UI design (zero login)
+
+```bash
+npx skills add komako-workshop/stringers
+```
+
+Then, in Claude Code, Cursor, Codex or any agent that supports skills:
+
+1. **Say** "redesign this screen with stringers". Same sentence for a brand-new app, an ugly screen, or one that looks AI-generated.
+2. **Pick a look.** The AI picks 3 contrasting styles (light and dark, one of them bold) and sends a live `?pick=` link with 4 real iOS screens per style. None of them right? Browse all 204 styles at [stringers.io/en/styles](https://stringers.io/en/styles/) and send any style name back.
+3. **Get the code.** It locks that style's `DESIGN.md`, views the 4-screen reference strip, then writes clean SwiftUI / Expo / React Native UI without deleting a single feature. On routine edits afterwards it stays silent and keeps the existing style.
+
+A `?pick=` link looks like this: <https://stringers.io/en/styles/?pick=oat-margin,amber-roundel,citron-kite>
+
+Already on the Claude Code plugin? Nothing else to install: from 0.12.0 the plugin ships the same skill.
+
+### Quickstart 2: 520k-app market intelligence MCP (30-second token)
+
+Stringers (「什么值得做」) is an app intelligence library for indie developers and small teams. It answers two questions: **which directions have room right now, and how did the products that took off get their users and revenue.**
+
+Five complementary data layers:
+
+- **Hot niches (`list_waves` / `get_wave`)**: 400+ niches built from recent App Store and Google Play launches that do the same job. Each shows who got traction first, who followed in what order, and how many entrants from the last 3 months earn ≥ $1K a month.
+- **Early-bird apps (`list_early_apps`)**: 300+ recently launched apps that already earn and have no look-alike in the library yet.
+- **The full library and single-app research (`search_apps` / `list_apps` / `get_app` / `research_app` / `query_sql`)**: ~520,000 App Store and Google Play apps with monthly revenue, downloads, growth, ratings, languages, in-app purchase ranges, same-developer portfolios, 12.41M real user reviews with 1–2 star pain points, multi-country chart history, release notes, and live plus historical ad creatives from four platforms (Meta / Google / TikTok / Apple). Web research and the write-up are done by your own model.
+- **Market feed (`feed`)**: small products whose numbers moved suddenly each day, with an investigation of why.
+- **Playbooks (`plays`)**: reusable growth, cold-start and monetization plays distilled from real cases, searchable by acquisition tactic.
+
+#### Connect in 30 seconds
+
+1. Open [stringers.io/en/start.html](https://stringers.io/en/start.html) and **sign in** (phone number + code, or Google; new accounts are created automatically).
+2. Copy the setup prompt and paste it to your agent.
+3. The agent adds the configuration itself. Once connected, just ask.
+
+Your personal address looks like this:
+
+```
+https://stringers.io/mcp/wt_xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+That address is your token, so keep it out of public places. If it leaks, generate a new address on the same page and the old one stops working immediately. There is no shared or example address; a URL containing a placeholder returns 403.
+
+#### Claude Code plugin
+
+Once you have a token, in Claude Code:
+
+```
+/plugin marketplace add komako-workshop/stringers
+/plugin install stringer@stringers
+```
+
+It asks for the token during install and sets up the MCP server and the skill (UI design + market intelligence) together.
+
+#### Manual setup
+
+Add one remote MCP server in your client: name `stringer`, type Streamable HTTP, URL = your personal address.
+
+**Claude Code**
+
+```bash
+claude mcp add --transport http --scope user stringer https://stringers.io/mcp/<token>
+```
+
+**Cursor**: `~/.cursor/mcp.json`
+
+```json
+{ "mcpServers": { "stringer": { "url": "https://stringers.io/mcp/<token>" } } }
+```
+
+**Codex**: `~/.codex/config.toml`
+
+```toml
+[mcp_servers.stringer]
+url = "https://stringers.io/mcp/<token>"
+```
+
+**ChatGPT deep research / connectors that only support `search` + `fetch`**: use `https://stringers.io/mcp/oai/<token>`.
+
+**Clients that only run local commands (stdio)**: install the CLI below and configure the client to run `stringer mcp`.
+
+#### What to ask
+
+- Which app niches still pay for newcomers? Which early-bird apps have no follower yet?
+- How many apps plan a week of dinners on a budget? What does each earn, who entered when, who is buying ads?
+- This app (paste a store link): what does it earn, how did it grow, and which ad creatives does it run on Meta / Google / TikTok / Apple?
+- Which products broke out in today's feed? Turn it into a daily brief for my category.
+- I shipped a utility app nobody knows about. Which growth plays can I copy, and what are the real cases?
+
+#### Tools (12)
+
+| Tool | What it does |
+|---|---|
+| `publish_board` | Packs the niches, early-bird apps and apps you selected into an interactive web board (`https://stringers.io/appdb/#b/<id>`) with icons, revenue trends, entry-by-month charts and AI notes |
+| `research_app` | Everything the library knows about one app (revenue, review text, charts, release notes, four-platform ad creatives, existing write-ups) plus a checklist of what to look up on the web yourself |
+| `compare_apps` | 2–3 competitors side by side: revenue, downloads, main markets, ad activity and real 1–2 star reviews |
+| `list_waves` | Hot niches, ranked by how many recent entrants earn; supports `q` search, `category`, `store`, `detail=true`, `offset` |
+| `get_wave` | Full profile of one niche: positioning, analysis, month-by-month entries, every earning member; pass any app to find its niche and entry rank |
+| `list_early_apps` | Early-bird apps: recently launched, already earning, no look-alike yet; supports `q`, `category`, `store`, `min_rev` and sorting |
+| `search_apps` | Fuzzy search across ~520k apps by a sentence or a name, with related niches attached and optional revenue / launch date / small-team / category filters |
+| `list_apps` | Filter a batch of apps and sort by revenue, growth or age; returns a total count, supports regex `pattern` and paging |
+| `get_app` | Full profile of one app; add `sections` such as `reviews`, `charts`, `release_notes`, `ads`, `research`, `description`, `developer`, `daily`, `wave`, `all`; `check_ads=true` checks Apple + Meta ads live |
+| `query_sql` | Read-only DuckDB SQL over the app library for distributions, percentiles and cross-category stats |
+| `feed` | Daily breakouts with the reason behind each: latest day by default, `day` for a date, `q` to search, `slug` for the full investigation |
+| `plays` | Growth, cold-start and monetization playbooks (`id`, `q`), plus `case_q` to search thousands of real cases by acquisition tactic and `case_key` for one app's details |
+
+#### Limits
+
+Free during the beta: no card required, Google sign-in and international phone numbers are supported. Read-only tools are annotated `readOnlyHint: true`, so clients such as Codex do not ask for confirmation on every call.
+
+#### CLI (optional)
+
+One Python file, standard library only:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/komako-workshop/stringers/main/cli/stringer -o ~/.local/bin/stringer && chmod +x ~/.local/bin/stringer
+export STRINGER_KEY=wt_…
+stringer waves
+stringer waves --solo
+stringer search "plan a week of dinners from supermarket prices"
+stringer apps --key https://apps.apple.com/us/app/…/id6759298323
+stringer feed
+stringer plays
+```
+
+### What's in this repo
+
+This repo is the access layer: docs, the Claude Code plugin, the skill and the CLI. Data collection and the server are not here.
+
+[`skills/stringers/`](skills/stringers/SKILL.md) is one unified skill that loads only the half you need: [`references/design.md`](skills/stringers/references/design.md) for UI work, [`references/market.md`](skills/stringers/references/market.md) for market research. The design half works without the MCP connected.
+
+### License
+
+Code in this repo is MIT. Articles, judgments and data on the website belong to Stringers (「什么值得做」); please credit and link when quoting.

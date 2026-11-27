@@ -1,6 +1,6 @@
 {
   "name": "stringers",
-  "description": "「什么值得做」(stringers.io)的 Claude Code 插件:skill + 远程 MCP",
+  "description": "Stringers(stringers.io)的 Claude Code 插件:移动端 UI 设计 skill(204 套真实 iOS 风格)+ 52 万 App 商业情报远程 MCP",
   "owner": {
     "name": "komako-workshop"
   },
@@ -8,7 +8,8 @@
     {
       "name": "stringer",
       "source": "./",
-      "description": "「什么值得做」(stringers.io):面向独立开发者和小团队的 App 商业情报库(热门赛道、早鸟新苗子、52 万 App 档案与投放、市场动态、增长打法)"
+      "version": "0.12.0",
+      "description": "Stringers(stringers.io):App 创业者的 AI 工具箱——204 套真实 iOS 界面风格(DESIGN.md + ?pick= 并排预览)做移动端 UI,加 52 万 App 商业情报 MCP(热门赛道、早鸟新苗子、App 档案与投放、市场动态、增长打法)"
     }
   ]
 }
