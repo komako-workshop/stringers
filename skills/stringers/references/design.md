@@ -17,11 +17,11 @@ Inspect the workspace first (`DESIGN.md`, existing views/screens, theme files).
 
 Do **not** ask "would you like to pick a style?" as an empty extra turn. Go straight to delivering value:
 
-1. Fetch the curated 28-style flagship index (single tiny request, ~7KB):
+1. Fetch the compact 28-style starter index (single tiny request, ~7KB — saves context tokens while spanning every major light/dark temperament and app domain):
    ```bash
    curl -s https://stringers.io/styles/featured-index.tsv
    ```
-   *(Columns: `rank`, `slug`, `name`, `mode`, `categories`, `tagline`, `fits`. All 28 entries are hand-curated flagship styles verified to reproduce reliably. The other 176 styles of the 204-style library live in the full gallery — the user browses those, you don't need to fetch them.)*
+   *(Columns: `rank`, `slug`, `name`, `mode`, `categories`, `tagline`, `fits`. All 204 styles in the library are extracted from real iOS apps with full numerical `DESIGN.md` cards and 4-screen strips; this 28-style starter index is simply a compact representative shortlist for fast initial picking, while the full 204-style gallery lets users browse deeper by domain or mood and pick any slug.)*
 2. Pick **3 candidates that sit as far apart from each other as possible** while each still suits the app. In our human pick tests, people repeatedly chose a direction nobody would have predicted from the app as it stood — a light editorial style for a dark social app, a bold dark instrument style for a light habit tracker. Three near-neighbours waste the user's one look at real alternatives, so spread the picks:
    - **#1 — the most natural, high-craft fit** for this app's domain and content shape (trackers/dashboards, reading/notes, cover shelves…).
    - **#2 — a comfortable everyday style in the opposite `mode` from #1**, so the comparison always contains at least one `light` and one `dark` style.
@@ -78,6 +78,7 @@ The card (`DESIGN.md`) is the exact numerical spec, and the 4-screen reference i
    - Chinese / Japanese / Korean UI → CJK Typography section
    - Paywall / Pricing screen → Paywall section
 3. In **Redesign** mode: preserve every existing feature, state, control, and data field — replace the visual layer cleanly rather than stripping the product down into a mock.
+4. **Optional commercial check (when building a paywall or new app):** if the user hasn't locked pricing or positioning yet, you can optionally run one quick `search_apps` or `list_waves` lookup via [market.md](market.md) (works zero-login via the 3/day live trial, or via connected `stringer` MCP) to anchor paywall tiers and value framing against real earning apps in the same niche.
 
 ## Step 4 — Visual Self-Check (when preview is available)
 

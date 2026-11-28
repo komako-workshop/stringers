@@ -7,8 +7,8 @@
 | | Mobile UI design · 移动端 UI 设计 | 520k-app market intelligence · 52 万 App 商业情报 |
 |---|---|---|
 | What · 是什么 | 204 real iOS UI styles, one `DESIGN.md` each<br>204 套真实 iOS 界面风格，每套一份 `DESIGN.md` | Niches, revenue, reviews, ad creatives, growth playbooks<br>赛道、收入、评论、买量素材、增长打法 |
-| How · 怎么用 | Skill, **zero login** · Skill，**免登录** | Remote MCP, **30-second token** · 远程 MCP，**30 秒拿 token** |
-| Install · 安装 | `npx skills add komako-workshop/stringers` | [Configure agent](https://stringers.io/en/start.html) · [配置 agent](https://stringers.io) |
+| How · 怎么用 | Skill, **zero login** · Skill，**免登录** | **Zero-login 3/day live trial** + full 13-tool MCP (30s token)<br>**免登录每天 3 次试查** + 完整 13 工具远程 MCP（30 秒拿 token） |
+| Install · 安装 | `npx skills add komako-workshop/stringers` | [Configure agent](https://stringers.io/en/start.html) · [配置 agent](https://stringers.io/start.html) |
 
 ---
 
@@ -32,7 +32,7 @@ A `?pick=` link looks like this: <https://stringers.io/en/styles/?pick=oat-margi
 
 Already on the Claude Code plugin? Nothing else to install: from 0.12.0 the plugin ships the same skill.
 
-### Quickstart 2: 520k-app market intelligence MCP (30-second token)
+### Quickstart 2: 520k-app market intelligence (zero-login trial + 30-second MCP)
 
 Stringers is an app intelligence library for indie developers and small teams. It answers two questions: **which directions have room right now, and how did the products that took off get their users and revenue.**
 
@@ -40,9 +40,13 @@ Five complementary data layers:
 
 - **Hot niches (`list_waves` / `get_wave`)**: 400+ niches built from recent App Store and Google Play launches that do the same job. Each shows who got traction first, who followed in what order, and how many entrants from the last 3 months earn ≥ $1K a month.
 - **Early-bird apps (`list_early_apps`)**: 300+ recently launched apps that already earn and have no look-alike in the library yet.
-- **The full library and single-app research (`search_apps` / `list_apps` / `get_app` / `research_app` / `query_sql`)**: ~520,000 App Store and Google Play apps with monthly revenue, downloads, growth, ratings, languages, in-app purchase ranges, same-developer portfolios, 12.41M real user reviews with 1–2 star pain points, multi-country chart history, release notes, and live plus historical ad creatives from four platforms (Meta / Google / TikTok / Apple). Web research and the write-up are done by your own model.
+- **The full library and single-app research (`search_apps` / `list_apps` / `get_app` / `get_reviews` / `research_app` / `query_sql`)**: ~520,000 App Store and Google Play apps with monthly revenue, downloads, growth, ratings, languages, in-app purchase ranges, same-developer portfolios, 12.41M real user reviews with 1–2 star pain points, multi-country chart history, release notes, and live plus historical ad creatives from four platforms (Meta / Google / TikTok / Apple). Web research and the write-up are done by your own model.
 - **Market feed (`feed`)**: small products whose numbers moved suddenly each day, with an investigation of why.
 - **Playbooks (`plays`)**: reusable growth, cold-start and monetization plays distilled from real cases, searchable by acquisition tactic.
+
+#### Try it right now (zero login, 3 calls/day per IP)
+
+If you installed the skill via `npx skills add komako-workshop/stringers`, your agent can already query live data immediately via `POST https://stringers.io/mcp/trial/call` (8 read-only discovery tools: `list_waves`, `get_wave`, `list_early_apps`, `search_apps`, `list_apps`, `get_app`, `feed`, `plays`; up to 3 calls/day per IP). Connect your personal MCP below when you want unlimited queries and all 13 tools (`query_sql`, `research_app`, `compare_apps`, `get_reviews`, `publish_board`).
 
 #### Connect in 30 seconds
 
@@ -104,7 +108,7 @@ url = "https://stringers.io/mcp/<token>"
 - Which products broke out in today's feed? Turn it into a daily brief for my category.
 - I shipped a utility app nobody knows about. Which growth plays can I copy, and what are the real cases?
 
-#### Tools (12)
+#### Tools (13)
 
 | Tool | What it does |
 |---|---|
@@ -117,6 +121,7 @@ url = "https://stringers.io/mcp/<token>"
 | `search_apps` | Fuzzy search across ~520k apps by a sentence or a name, with related niches attached and optional revenue / launch date / small-team / category filters |
 | `list_apps` | Filter a batch of apps and sort by revenue, growth or age; returns a total count, supports regex `pattern` and paging |
 | `get_app` | Full profile of one app; add `sections` such as `reviews`, `charts`, `release_notes`, `ads`, `research`, `description`, `developer`, `daily`, `wave`, `all`; `check_ads=true` checks Apple + Meta ads live |
+| `get_reviews` | Batch real user review text & star distribution for 1–10 apps (`keys`), filterable by `max_rating`, `days`, and `per_app` to surface shared 1–2 star pain points fast |
 | `query_sql` | Read-only DuckDB SQL over the app library for distributions, percentiles and cross-category stats |
 | `feed` | Daily breakouts with the reason behind each: latest day by default, `day` for a date, `q` to search, `slug` for the full investigation |
 | `plays` | Growth, cold-start and monetization playbooks (`id`, `q`), plus `case_q` to search thousands of real cases by acquisition tactic and `case_key` for one app's details |
@@ -144,7 +149,7 @@ stringer plays
 
 This repo is the access layer: docs, the Claude Code plugin, the skill and the CLI. Data collection and the server are not here.
 
-[`skills/stringers/`](skills/stringers/SKILL.md) is one unified skill that loads only the half you need: [`references/design.md`](skills/stringers/references/design.md) for UI work, [`references/market.md`](skills/stringers/references/market.md) for market research. The design half works without the MCP connected.
+[`skills/stringers/`](skills/stringers/SKILL.md) is one unified skill that loads only the half you need: [`references/design.md`](skills/stringers/references/design.md) for UI work, [`references/market.md`](skills/stringers/references/market.md) for market research. The design half works fully without login, and the market half includes a zero-login 3/day live trial before you connect a personal MCP.
 
 ### License
 
@@ -170,7 +175,7 @@ npx skills add komako-workshop/stringers
 
 已经装了 Claude Code 插件的不用另装：插件 0.12.0 起自带同一个 skill。
 
-### 快速开始 2：52 万 App 商业情报 MCP（30 秒拿 token）
+### 快速开始 2：52 万 App 商业情报（免登录试查 + 30 秒完整 MCP）
 
 [什么值得做](https://stringers.io) 是面向独立开发者和小团队的 **App 商业情报库**，帮你回答两个核心问题：**现在做什么方向有机会；跑出来的产品是怎么拿到用户和赚到钱的。**
 
@@ -178,11 +183,15 @@ npx skills add komako-workshop/stringers
 
 - **热门赛道（`list_waves` / `get_wave`）**：把近一两年 App Store 和 Google Play 上做同一件事的新产品归成四百多条赛道，每条知道谁先做出量、谁第几个跟进来、近 3 个月新进的人里有多少家赚到钱（月入 ≥ $1K）——这是目前大家都在做、确定性相对较高的方向。
 - **早鸟新苗子（`list_early_apps`）**：近期上架已经开始赚钱、全库还没见到同款的 0 跟进独苗，适合挑出来逐个拆解产品形态、流量来源和可复制性。
-- **52 万 App 全量库与单品调研材料（`search_apps` / `list_apps` / `get_app` / `research_app` / `query_sql`）**：App Store 与 Google Play 约 52 万个 App 的月收入、下载、增长、评分、支持语言与内购区间、同开发者矩阵、1,241 万条真实用户评论与 1–2 星差评痛点、多国榜单历史、版本更新日志、四平台（Meta / Google / TikTok / Apple）实时与历史买量素材，深度拆解单个 App 时一次拿齐全套材料，联网调查和成文由你自己的模型完成。
+- **52 万 App 全量库与单品调研材料（`search_apps` / `list_apps` / `get_app` / `get_reviews` / `research_app` / `query_sql`）**：App Store 与 Google Play 约 52 万个 App 的月收入、下载、增长、评分、支持语言与内购区间、同开发者矩阵、1,241 万条真实用户评论与 1–2 星差评痛点、多国榜单历史、版本更新日志、四平台（Meta / Google / TikTok / Apple）实时与历史买量素材，深度拆解单个 App 时一次拿齐全套材料，联网调查和成文由你自己的模型完成。
 - **市场动态（`feed`）**：每天数据上突然异动的小产品及原因调查，适合追踪最新热点、查某个产品为什么这几天火了，或整理成每日情报日报。
 - **打法库（`plays`）**：从大量真实起量案例中归纳出的可复用增长、冷启动和变现做法（含步骤、正反案例），并支持按获客做法直接检索实证案例。
 
 网页上是整理好的榜单和调查。接进你自己的 agent（Claude Code、Cursor、Codex、Trae……）之后，它能直接读这五个数据层，再结合**你自己的情况**给出判断。
+
+#### 免登录直接试查（每 IP 每天 3 次）
+
+只要通过 `npx skills add komako-workshop/stringers` 装了 skill，不用配 MCP 就能立刻通过 `POST https://stringers.io/mcp/trial/call` 实测 8 个只读发现工具（`list_waves`、`get_wave`、`list_early_apps`、`search_apps`、`list_apps`、`get_app`、`feed`、`plays`）。需要完整 13 个工具（`query_sql` / `research_app` / `compare_apps` / `get_reviews` / `publish_board`）和更高额度时，按下面 30 秒接上你的专属 MCP 即可。
 
 #### 30 秒接上
 
@@ -244,7 +253,7 @@ url = "https://stringers.io/mcp/<token>"
 - 今天市场动态里有哪些产品突然涨起来了？帮我整理一份我关心领域的日报。
 - 我做了一个工具 App 没人知道，有哪些可照抄的起量打法和实证案例？
 
-#### 工具（12 个）
+#### 工具（13 个）
 
 | 工具 | 做什么 |
 |---|---|
@@ -257,13 +266,14 @@ url = "https://stringers.io/mcp/<token>"
 | `search_apps` | 在约 52 万个 App 里按一句话或名字模糊搜，按相关度排，自动带出相关赛道；可叠收入、上架时间、小团队、品类等条件 |
 | `list_apps` | 按条件筛一批 App，按收入 / 增长 / 新旧排序，开头给总数，支持 `pattern` 全文正则与翻页 |
 | `get_app` | 一个 App 的全维档案：默认精简（月入、下载、增长、评分、支持语言/内购区间/官网、所在赛道、四平台投放状态、调查稿摘要）；`sections` 按需加 `reviews`（真实评论与 1–2 星差评痛点）、`charts`（多国榜单历史）、`release_notes`（版本更新日志）、`ads`（四平台逐条广告素材与欧盟触达）、`research`、`description`、`developer`、`daily`、`wave`、`all`；`check_ads=true` 可当场实时查 Apple + Meta 广告 |
+| `get_reviews` | 一次批量拉取 1–10 个 App（`keys`）的星级分布和真实低分评论原文，支持按 `max_rating`、`days`、`per_app` 筛选，快速归纳共同痛点 |
 | `query_sql` | 对 App 库跑只读 DuckDB SQL，算分布、分位数和跨品类统计 |
 | `feed` | 市场动态：每天突然异动的小产品及原因调查。不带参数给最新一天，`day` 看某天，`q` 搜历史，`slug` 读完整调查 |
 | `plays` | 打法库：归纳好的起量/冷启动/变现打法（清单、`id` 读全文、`q` 搜），并支持 `case_q` 按获客做法搜数千个真实实证案例、`case_key` 读单品获客细节 |
 
 #### 限额
 
-测试阶段免费（免绑卡，支持 Google 登录与海外手机号），全部 11 个工具已标注 `readOnlyHint: true`（Codex 等客户端无需每次弹窗确认）。
+测试阶段免费（免绑卡，支持 Google 登录与海外手机号），只读工具均已标注 `readOnlyHint: true`（Codex 等客户端无需每次弹窗确认）。
 
 #### 命令行（可选）
 
@@ -284,7 +294,7 @@ stringer plays
 
 这个仓库是接入层：说明、Claude Code 插件、skill、命令行。采集和服务端不在这里。
 
-[`skills/stringers/`](skills/stringers/SKILL.md) 是一个统一的 skill，按你的问题只加载需要的那一半：做界面读 [`references/design.md`](skills/stringers/references/design.md)，查市场读 [`references/market.md`](skills/stringers/references/market.md)。没接 MCP 时设计这一半照常用。
+[`skills/stringers/`](skills/stringers/SKILL.md) 是一个统一的 skill，按你的问题只加载需要的那一半：做界面读 [`references/design.md`](skills/stringers/references/design.md)，查市场读 [`references/market.md`](skills/stringers/references/market.md)。没接 MCP 时设计这一半完整可用，商业情报这一半也支持免登录每天 3 次试查。
 
 ### 许可
 
