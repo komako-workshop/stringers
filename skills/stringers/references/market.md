@@ -44,7 +44,9 @@ Use this track when the user asks about profitable app niches, early-bird apps, 
 
 ## 常用配合
 
-1. **宽泛找方向**：并发 `list_waves()` + `list_early_apps()` + `feed()`，挑出值得深挖的用 `get_wave` 和 `get_app` 展开。
+> **免登录试查（3 次/天）注意**：以下多步并发组合面向已连完整 MCP 的场景；免登录试查时每次只挑最匹配的 **1 个**工具单发（例如先 `list_waves` 或 `search_apps`，再视需要补 1 次 `get_app`），不要一次并发 3 个把当天额度瞬间用光。
+
+1. **宽泛找方向**：已连 MCP 时并发 `list_waves()` + `list_early_apps()` + `feed()`（免登录试查优先单发 `list_waves()` 或 `list_early_apps()`），挑出值得深挖的再用 `get_wave` / `get_app` 展开。
 2. **验具体想法**：`search_apps(query="一句话描述")` + `list_waves(q="...")` 摸清已有竞品和赛道情况，再用 `get_app` 看做法与投放。
 3. **扒竞品与广告**：`get_app(key="商店链接或名字")`，按需加 `sections="ads"` / `sections="research"`。
 4. **找获客与变现打法**：先 `plays()` 看归纳打法，再用 `plays(case_q="关键词")` 搜实证案例。
